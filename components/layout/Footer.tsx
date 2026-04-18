@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Share2, Link2, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone, Instagram, Twitter, Youtube } from "lucide-react";
 
 const shopLinks = [
   { label: "DIY Charts", href: "/diy-charts" },
@@ -22,62 +22,100 @@ const companyLinks = [
 export default function Footer() {
   return (
     <footer style={{
-      background: "linear-gradient(135deg,#f5f3ff 0%,#e0f2fe 60%,#fff1f2 100%)",
-      borderTop: "1px solid rgba(139,92,246,0.1)",
+      background: "#EAD8C0",
+      borderTop: "1px solid rgba(62,47,47,0.10)",
       padding: "64px 24px 32px",
     }}>
       <style>{`
-        .footer-link { display:block;font-size:14px;color:#6b7280;text-decoration:none;margin-bottom:10px;transition:color 0.2s; }
-        .footer-link:hover { color:#8b5cf6; }
-        .social-btn { width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;transition:all 0.2s;text-decoration:none; }
-        .social-btn:hover { background:rgba(139,92,246,0.1);transform:translateY(-2px); }
+        .footer-link {
+          display: block;
+          font-family: 'Poppins', sans-serif;
+          font-size: 13px;
+          color: #7A6060;
+          text-decoration: none;
+          margin-bottom: 10px;
+          transition: color 0.2s;
+        }
+        .footer-link:hover { color: #C97B63; }
+        .social-btn {
+          width: 36px; height: 36px; border-radius: 50%;
+          background: rgba(62,47,47,0.07);
+          border: 1px solid rgba(62,47,47,0.12);
+          display: flex; align-items: center; justify-content: center;
+          text-decoration: none;
+          transition: all 0.2s;
+        }
+        .social-btn:hover { background: #C97B63; transform: translateY(-2px); }
+        .social-btn:hover svg { stroke: white; }
       `}</style>
-      <div style={{ maxWidth:1200,margin:"0 auto" }}>
-        <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:40,marginBottom:48 }}>
+
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 40, marginBottom: 52 }}>
+
+          {/* Brand */}
           <div>
-            <div style={{ display:"flex",alignItems:"center",gap:10,marginBottom:16 }}>
-              <div style={{ width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#8b5cf6,#0ea5e9)",display:"flex",alignItems:"center",justifyContent:"center" }}>
-                <span style={{ fontFamily:"'Playfair Display',serif",fontWeight:700,fontSize:14,color:"white" }}>CV</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#C97B63", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 13, color: "white" }}>CV</span>
               </div>
-              <span style={{ fontFamily:"'Playfair Display',serif",fontWeight:700,fontSize:18,color:"#1a1a2e" }}>Craft Verse</span>
+              <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 18, color: "#3E2F2F" }}>Craft Verse</span>
             </div>
-            <p style={{ fontSize:14,color:"#6b7280",lineHeight:1.6,maxWidth:220,marginBottom:20 }}>
-              Where creativity meets craftsmanship. Build, create, and explore your imagination.
+            <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, color: "#7A6060", lineHeight: 1.7, maxWidth: 210, marginBottom: 20 }}>
+              A creative studio where imagination becomes something you can hold.
             </p>
-            <div style={{ display:"flex",gap:12 }}>
-              {[Share2,Link2,Mail].map((Icon,i)=>(
-                <a key={i} href="#" className="social-btn"><Icon size={16} color="#8b5cf6"/></a>
+            <div style={{ display: "flex", gap: 10 }}>
+              {[Instagram, Twitter, Youtube].map((Icon, i) => (
+                <a key={i} href="#" className="social-btn"><Icon size={15} color="#7A6060" /></a>
               ))}
             </div>
           </div>
+
+          {/* Shop */}
           <div>
-            <h4 style={{ fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:600,color:"#1a1a2e",marginBottom:16 }}>Shop</h4>
-            {shopLinks.map(l=><Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>)}
+            <h4 style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 600, color: "#3E2F2F", marginBottom: 16 }}>Shop</h4>
+            {shopLinks.map(l => <Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>)}
           </div>
+
+          {/* Services */}
           <div>
-            <h4 style={{ fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:600,color:"#1a1a2e",marginBottom:16 }}>Services</h4>
-            {serviceLinks.map(l=><Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>)}
+            <h4 style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 600, color: "#3E2F2F", marginBottom: 16 }}>Services</h4>
+            {serviceLinks.map(l => <Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>)}
           </div>
+
+          {/* Company */}
           <div>
-            <h4 style={{ fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:600,color:"#1a1a2e",marginBottom:16 }}>Company</h4>
-            {companyLinks.map(l=><Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>)}
+            <h4 style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 600, color: "#3E2F2F", marginBottom: 16 }}>Company</h4>
+            {companyLinks.map(l => <Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>)}
           </div>
+
+          {/* Contact */}
           <div>
-            <h4 style={{ fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:600,color:"#1a1a2e",marginBottom:16 }}>Contact</h4>
+            <h4 style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 600, color: "#3E2F2F", marginBottom: 16 }}>Contact</h4>
             {[
-              { Icon:Mail,   text:"hello@craftverse.in" },
-              { Icon:Phone,  text:"+91 98765 43210" },
-              { Icon:MapPin, text:"Rajkot, Gujarat, India" },
-            ].map(({Icon,text},i)=>(
-              <div key={i} style={{ display:"flex",alignItems:"center",gap:8,marginBottom:12 }}>
-                <Icon size={14} color="#8b5cf6"/><span style={{ fontSize:13,color:"#6b7280" }}>{text}</span>
+              { Icon: Mail,    text: "hello@craftverse.in" },
+              { Icon: Phone,   text: "+91 98765 43210" },
+              { Icon: MapPin,  text: "Rajkot, Gujarat, India" },
+            ].map(({ Icon, text }, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 12 }}>
+                <Icon size={13} color="#C97B63" style={{ marginTop: 2, flexShrink: 0 }} />
+                <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: 13, color: "#7A6060", lineHeight: 1.5 }}>{text}</span>
               </div>
             ))}
           </div>
         </div>
-        <div style={{ borderTop:"1px solid rgba(139,92,246,0.12)",paddingTop:24,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12 }}>
-          <p style={{ fontSize:13,color:"#9ca3af" }}>© 2025 Craft Verse. All rights reserved.</p>
-          <p style={{ fontSize:13,color:"#c4b5fd" }}>Made with ✦ creativity</p>
+
+        {/* Bottom */}
+        <div style={{
+          borderTop: "1px solid rgba(62,47,47,0.10)",
+          paddingTop: 24,
+          display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12,
+        }}>
+          <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: 12, color: "#A89080" }}>
+            © 2025 Craft Verse. All rights reserved.
+          </p>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 13, color: "#C97B63", fontStyle: "italic" }}>
+            Made with care &amp; creativity ✦
+          </p>
         </div>
       </div>
     </footer>
