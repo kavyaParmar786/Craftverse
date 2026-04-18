@@ -1,14 +1,14 @@
 export function ProductSkeleton() {
   return (
-    <div style={{ borderRadius: 20, background: "white", border: "1px solid rgba(139,92,246,0.08)", overflow: "hidden" }}>
-      <div className="skeleton" style={{ height: 220 }} />
-      <div style={{ padding: "16px 20px 20px" }}>
-        <div className="skeleton" style={{ height: 18, width: "70%", marginBottom: 10 }} />
-        <div className="skeleton" style={{ height: 14, width: "100%", marginBottom: 6 }} />
-        <div className="skeleton" style={{ height: 14, width: "80%", marginBottom: 16 }} />
+    <div style={{ borderRadius: 18, background: "#FAF3E8", border: "1px solid rgba(62,47,47,0.08)", overflow: "hidden" }}>
+      <div className="skeleton" style={{ height: 210 }} />
+      <div style={{ padding: "16px 18px 18px" }}>
+        <div className="skeleton" style={{ height: 17, width: "70%", marginBottom: 10 }} />
+        <div className="skeleton" style={{ height: 13, marginBottom: 5 }} />
+        <div className="skeleton" style={{ height: 13, width: "80%", marginBottom: 14 }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div className="skeleton" style={{ height: 24, width: 70 }} />
-          <div className="skeleton" style={{ height: 36, width: 90, borderRadius: 12 }} />
+          <div className="skeleton" style={{ height: 22, width: 64 }} />
+          <div className="skeleton" style={{ height: 34, width: 80, borderRadius: 50 }} />
         </div>
       </div>
     </div>
