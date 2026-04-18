@@ -7,17 +7,15 @@ import toast from "react-hot-toast";
 
 const statusOptions = ["pending", "reviewing", "accepted", "rejected", "completed"];
 const statusColors: Record<string, { bg: string; text: string }> = {
-  pending:   { bg: "rgba(201,123,99,0.12)", text: "#C97B63" },
-  reviewing: { bg: "rgba(62,47,47,0.08)",  text: "#3E2F2F" },
-  accepted:  { bg: "rgba(76,100,68,0.12)",  text: "#4C6444" },
-  rejected:  { bg: "rgba(180,60,60,0.10)",  text: "#B43C3C" },
-  completed: { bg: "rgba(168,92,69,0.12)",  text: "#A85C45" },
+  pending:   { bg: "rgba(245,158,11,0.12)",  text: "#d97706" },
+  reviewing: { bg: "rgba(14,165,233,0.12)",  text: "#0284c7" },
+  accepted:  { bg: "rgba(16,185,129,0.12)",  text: "#059669" },
+  rejected:  { bg: "rgba(239,68,68,0.12)",   text: "#dc2626" },
+  completed: { bg: "rgba(139,92,246,0.12)",  text: "#7c3aed" },
 };
-const typeLabel: Record<string, string> = { model: "Custom Model", clothes: "Custom Clothes", "3d-printing": "3D Printing" };
 
-const TH = ({ children }: { children: string }) => (
-  <th style={{ padding: "10px 18px", textAlign: "left", fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: 600, color: "#7A6060", textTransform: "uppercase", letterSpacing: "0.06em" }}>{children}</th>
-);
+const typeLabel: Record<string, string> = { model: "Custom Model", clothes: "Custom Clothes", "3d-printing": "3D Printing" };
+const typeColor: Record<string, string> = { model: "#10b981", clothes: "#fb7185", "3d-printing": "#f59e0b" };
 
 export default function AdminRequestsPage() {
   const { token } = useAuth();
@@ -32,7 +30,11 @@ export default function AdminRequestsPage() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch(`/api/requests/${id}`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ status }) });
+      const res = await fetch(`/api/requests/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status }),
+      });
       if (!res.ok) throw new Error();
       setRequests(prev => prev.map(r => r._id === id ? { ...r, status } : r));
       toast.success("Status updated!");
@@ -41,54 +43,77 @@ export default function AdminRequestsPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, color: "#3E2F2F", marginBottom: 4 }}>Custom Requests</h1>
-        <p style={{ fontFamily: "'Poppins',sans-serif", color: "#7A6060", fontSize: 13 }}>{requests.length} total requests</p>
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, fontWeight: 700, color: "#1a1a2e", marginBottom: 4 }}>Custom Requests</h1>
+        <p style={{ color: "#6b7280", fontSize: 14 }}>{requests.length} total requests</p>
       </div>
+
       {loading ? (
-        <div style={{ display: "grid", gap: 10 }}>{[...Array(5)].map((_, i) => <div key={i} className="skeleton" style={{ height: 64, borderRadius: 14 }} />)}</div>
+        <div style={{ display: "grid", gap: 12 }}>
+          {[...Array(5)].map((_, i) => <div key={i} className="skeleton" style={{ height: 80, borderRadius: 16 }} />)}
+        </div>
       ) : requests.length === 0 ? (
-        <div style={{ background: "#FAF3E8", border: "1px solid rgba(62,47,47,0.09)", borderRadius: 18, padding: "60px 24px", textAlign: "center" }}>
-          <FileText size={40} color="#EAD8C0" style={{ marginBottom: 12 }} />
-          <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 19, color: "#3E2F2F", marginBottom: 6 }}>No Requests Yet</h3>
-          <p style={{ fontFamily: "'Poppins',sans-serif", color: "#A89080", fontSize: 13 }}>Custom requests will appear here.</p>
+        <div className="glass-card" style={{ padding: "72px 24px", borderRadius: 22, textAlign: "center" }}>
+          <FileText size={48} color="#e5e7eb" style={{ marginBottom: 16 }} />
+          <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, color: "#1a1a2e", marginBottom: 8 }}>No Requests Yet</h3>
+          <p style={{ color: "#9ca3af" }}>Custom requests from users will appear here.</p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {requests.map((req) => (
-            <div key={req._id} style={{ background: "#FAF3E8", border: "1px solid rgba(62,47,47,0.09)", borderRadius: 16, overflow: "hidden" }}>
-              {/* Row */}
-              <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                <span style={{ fontFamily: "monospace", fontSize: 11, color: "#A89080", minWidth: 70 }}>#{req._id.slice(-6).toUpperCase()}</span>
-                <div style={{ flex: 1, minWidth: 140 }}>
-                  <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13, fontWeight: 600, color: "#3E2F2F", margin: 0 }}>{req.title}</p>
-                  <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 11, color: "#A89080", margin: 0 }}>{req.user?.name || "—"} · {req.email}</p>
-                </div>
-                <span style={{ fontFamily: "'Poppins',sans-serif", padding: "3px 10px", borderRadius: 50, fontSize: 10, fontWeight: 600, background: "#EAD8C0", color: "#7A6060", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            <div key={req._id} className="glass-card" style={{ borderRadius: 18, overflow: "hidden" }}>
+              {/* Header row */}
+              <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 24px", cursor: "pointer", flexWrap: "wrap" }}
+                onClick={() => setExpanded(expanded === req._id ? null : req._id)}>
+                {/* Type badge */}
+                <span style={{ padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700, background: `${typeColor[req.type]}18`, color: typeColor[req.type], flexShrink: 0 }}>
                   {typeLabel[req.type] || req.type}
                 </span>
-                {req.budget > 0 && <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 14, fontWeight: 700, color: "#C97B63" }}>₹{req.budget.toLocaleString("en-IN")}</span>}
-                <div style={{ position: "relative" }}>
-                  <select value={req.status} onChange={e => updateStatus(req._id, e.target.value)}
-                    style={{ appearance: "none", padding: "4px 24px 4px 10px", borderRadius: 50, border: "none", cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: 600, background: statusColors[req.status]?.bg || "#EAD8C0", color: statusColors[req.status]?.text || "#3E2F2F" }}>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "#1a1a2e", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{req.title}</p>
+                  <p style={{ fontSize: 12, color: "#9ca3af", margin: "2px 0 0" }}>By {req.user?.name || "—"} · {req.email}</p>
+                </div>
+
+                {req.budget && (
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#7c3aed", flexShrink: 0 }}>₹{req.budget.toLocaleString("en-IN")}</span>
+                )}
+
+                {/* Status selector */}
+                <div style={{ position: "relative", flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                  <select
+                    value={req.status}
+                    onChange={e => updateStatus(req._id, e.target.value)}
+                    style={{ appearance: "none", padding: "5px 28px 5px 12px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: statusColors[req.status]?.bg, color: statusColors[req.status]?.text }}
+                  >
                     {statusOptions.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                   </select>
-                  <ChevronDown size={10} style={{ position: "absolute", right: 7, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: statusColors[req.status]?.text || "#3E2F2F" }} />
+                  <ChevronDown size={12} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: statusColors[req.status]?.text }} />
                 </div>
-                <button onClick={() => setExpanded(expanded === req._id ? null : req._id)}
-                  style={{ padding: "5px 8px", borderRadius: 8, border: "none", background: "#EAD8C0", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontFamily: "'Poppins',sans-serif", fontSize: 11, color: "#7A6060" }}>
-                  {expanded === req._id ? <ChevronUp size={13} /> : <ChevronDown size={13} />} Details
-                </button>
+
+                {expanded === req._id ? <ChevronUp size={16} color="#9ca3af" /> : <ChevronDown size={16} color="#9ca3af" />}
               </div>
+
               {/* Expanded details */}
               {expanded === req._id && (
-                <div style={{ padding: "14px 18px 18px", borderTop: "1px solid rgba(62,47,47,0.07)", background: "rgba(234,216,192,0.15)" }}>
-                  <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13, color: "#7A6060", lineHeight: 1.7, margin: "0 0 10px" }}>{req.description}</p>
-                  <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-                    {req.phone && <span style={{ fontFamily: "'Poppins',sans-serif", fontSize: 12, color: "#A89080" }}>📞 {req.phone}</span>}
-                    {req.material && <span style={{ fontFamily: "'Poppins',sans-serif", fontSize: 12, color: "#A89080" }}>Material: {req.material}</span>}
-                    {req.color && <span style={{ fontFamily: "'Poppins',sans-serif", fontSize: 12, color: "#A89080" }}>Color: {req.color}</span>}
-                    <span style={{ fontFamily: "'Poppins',sans-serif", fontSize: 12, color: "#A89080" }}>{new Date(req.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                <div style={{ padding: "0 24px 20px", borderTop: "1px solid rgba(139,92,246,0.08)" }}>
+                  <div style={{ paddingTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Description</p>
+                      <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.6 }}>{req.description}</p>
+                    </div>
+                    <div style={{ display: "grid", gap: 12 }}>
+                      {req.phone && (
+                        <div>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Phone</p>
+                          <a href={`tel:${req.phone}`} style={{ fontSize: 14, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>{req.phone}</a>
+                        </div>
+                      )}
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Submitted</p>
+                        <p style={{ fontSize: 13, color: "#374151" }}>{new Date(req.createdAt).toLocaleString("en-IN")}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

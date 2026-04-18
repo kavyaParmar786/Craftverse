@@ -1,91 +1,92 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingBag, FileText, Newspaper, Users, LogOut, ChevronRight, ExternalLink } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, FileText, Newspaper, Users, LogOut, ChevronRight, Sparkles } from "lucide-react";
 import { useAuth } from "@/store/authStore";
 
 const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard",       icon: LayoutDashboard },
-  { href: "/admin/products",  label: "Products",        icon: Package },
-  { href: "/admin/orders",    label: "Orders",          icon: ShoppingBag },
-  { href: "/admin/requests",  label: "Custom Requests", icon: FileText },
-  { href: "/admin/news",      label: "News",            icon: Newspaper },
-  { href: "/admin/users",     label: "Users",           icon: Users },
+  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/admin/requests", label: "Custom Requests", icon: FileText },
+  { href: "/admin/news", label: "News", icon: Newspaper },
+  { href: "/admin/users", label: "Users", icon: Users },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+
   const handleLogout = () => { logout(); router.push("/"); };
 
   return (
     <aside style={{
-      width: 236, minHeight: "100vh", flexShrink: 0,
-      background: "#FAF3E8",
-      borderRight: "1px solid rgba(62,47,47,0.10)",
+      width: 240, minHeight: "100vh", flexShrink: 0,
+      background: "linear-gradient(180deg, #fdfcfb 0%, #f5f3ff 100%)",
+      borderRight: "1px solid rgba(139,92,246,0.12)",
       display: "flex", flexDirection: "column",
       position: "sticky", top: 0,
     }}>
       {/* Logo */}
-      <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid rgba(62,47,47,0.08)" }}>
+      <div style={{ padding: "24px 20px 20px", borderBottom: "1px solid rgba(139,92,246,0.08)" }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#C97B63", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 13, color: "white" }}>CV</span>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #8b5cf6, #0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: "white" }}>CV</span>
           </div>
           <div>
-            <p style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: "#3E2F2F", margin: 0 }}>Craft Verse</p>
-            <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 9, color: "#C97B63", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>Admin Panel</p>
+            <p style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 15, color: "#1a1a2e", margin: 0 }}>Craft Verse</p>
+            <p style={{ fontSize: 10, color: "#8b5cf6", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>Admin Panel</p>
           </div>
         </Link>
       </div>
 
-      {/* User */}
-      <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(62,47,47,0.06)" }}>
+      {/* User info */}
+      <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(139,92,246,0.06)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#C97B63", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 12, fontWeight: 700, color: "white" }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #c4b5fd, #7dd3fc)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "white" }}>
             {user?.name?.[0] || "A"}
           </div>
           <div>
-            <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 12, fontWeight: 600, color: "#3E2F2F", margin: 0 }}>{user?.name || "Admin"}</p>
-            <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 10, color: "#A89080", margin: 0 }}>{user?.email}</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e", margin: 0 }}>{user?.name || "Admin"}</p>
+            <p style={{ fontSize: 11, color: "#9ca3af", margin: 0 }}>{user?.email}</p>
           </div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: "14px 10px" }}>
+      <nav style={{ flex: 1, padding: "16px 12px" }}>
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link key={href} href={href} style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "9px 13px", borderRadius: 11, marginBottom: 3,
+              padding: "10px 14px", borderRadius: 12, marginBottom: 4,
               textDecoration: "none",
-              background: active ? "#EAD8C0" : "transparent",
-              border: active ? "1px solid rgba(201,123,99,0.2)" : "1px solid transparent",
-              transition: "all 0.18s",
+              background: active ? "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(14,165,233,0.08))" : "transparent",
+              border: active ? "1px solid rgba(139,92,246,0.15)" : "1px solid transparent",
+              transition: "all 0.2s",
             }}
-            onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(201,123,99,0.07)"; }}
+            onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(139,92,246,0.05)"; }}
             onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                <Icon size={15} color={active ? "#C97B63" : "#A89080"} />
-                <span style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13, fontWeight: active ? 600 : 400, color: active ? "#3E2F2F" : "#7A6060" }}>{label}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <Icon size={16} color={active ? "#7c3aed" : "#9ca3af"} />
+                <span style={{ fontSize: 14, fontWeight: active ? 600 : 400, color: active ? "#7c3aed" : "#4b5563" }}>{label}</span>
               </div>
-              {active && <ChevronRight size={12} color="#C97B63" />}
+              {active && <ChevronRight size={13} color="#8b5cf6" />}
             </Link>
           );
         })}
       </nav>
 
-      {/* Footer */}
-      <div style={{ padding: "10px 10px 22px" }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 13px", borderRadius: 11, textDecoration: "none", fontFamily: "'Poppins',sans-serif", fontSize: 12, color: "#7A6060", marginBottom: 4 }}>
-          <ExternalLink size={14} color="#A89080" /> View Site
+      {/* Logout */}
+      <div style={{ padding: "12px 12px 24px" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 12, textDecoration: "none", fontSize: 13, color: "#6b7280", marginBottom: 6 }}>
+          <Sparkles size={15} /> View Site
         </Link>
-        <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 13px", borderRadius: 11, border: "none", background: "rgba(201,123,99,0.08)", cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontSize: 12, color: "#C97B63", width: "100%" }}>
-          <LogOut size={14} /> Sign Out
+        <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 12, border: "none", background: "rgba(251,113,133,0.06)", cursor: "pointer", fontSize: 13, color: "#ef4444", width: "100%" }}>
+          <LogOut size={15} /> Sign Out
         </button>
       </div>
     </aside>
