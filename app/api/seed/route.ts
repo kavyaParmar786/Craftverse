@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import Product from "@/models/Product";
 import News from "@/models/News";
 import User from "@/models/User";
+import bcrypt from "bcryptjs";
  
 const sampleProducts = [
   { name: "Solar System Model", price: 349, category: "models", description: "Complete working solar system model with all 8 planets, rotating sun and orbital rings. Perfect for science projects.", stock: 20, featured: true, image: "" },
@@ -32,41 +33,37 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
  
-    // Clear existing data
+    // Clear existing
     await Product.deleteMany({});
     await News.deleteMany({});
- 
-    // Insert products (no hooks needed, no passwords)
-    await Product.insertMany(sampleProducts);
- 
-    // Insert news
-    await News.insertMany(sampleNews);
- 
-    // ── Admin user ──────────────────────────────────────────────────────────
-    // IMPORTANT: Use .save() not .create() or insertMany() so the
-    // pre('save') password hashing hook runs correctly
     await User.deleteOne({ email: "admin@craftverse.in" });
  
-    const admin = new User({
+    // Insert products & news directly (no hooks needed)
+    await Product.insertMany(sampleProducts);
+    await News.insertMany(sampleNews);
+ 
+    // Hash password MANUALLY — bypass pre('save') hook entirely
+    // This is the most reliable way across all Mongoose/Vercel versions
+    const hashedPassword = await bcrypt.hash("Admin@123", 10);
+ 
+    await User.collection.insertOne({
       name: "Admin",
       email: "admin@craftverse.in",
-      password: "Admin@123",   // will be hashed by pre('save') hook
+      password: hashedPassword,
       role: "admin",
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
-    await admin.save();   // ← triggers the bcrypt hook
+ 
+    // Verify the hash works correctly before returning
+    const check = await bcrypt.compare("Admin@123", hashedPassword);
  
     return NextResponse.json({
       success: true,
       message: "Database seeded successfully",
-      counts: {
-        products: sampleProducts.length,
-        news: sampleNews.length,
-      },
-      admin: {
-        email: "admin@craftverse.in",
-        password: "Admin@123",
-        note: "Password is hashed via pre-save hook — login should work now",
-      },
+      counts: { products: sampleProducts.length, news: sampleNews.length },
+      admin: { email: "admin@craftverse.in", password: "Admin@123" },
+      passwordHashValid: check,
     });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
