@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Mail, MapPin, Phone, Instagram, Twitter, Youtube } from "lucide-react";
+import { Mail, MapPin, Phone, Share2, Link2, ExternalLink } from "lucide-react";
 
 const shopLinks = [
   { label: "DIY Charts", href: "/diy-charts" },
@@ -64,7 +64,7 @@ export default function Footer() {
               A creative studio where imagination becomes something you can hold.
             </p>
             <div style={{ display: "flex", gap: 10 }}>
-              {[Instagram, Twitter, Youtube].map((Icon, i) => (
+              {[Share2, Link2, ExternalLink].map((Icon, i) => (
                 <a key={i} href="#" className="social-btn"><Icon size={15} color="#7A6060" /></a>
               ))}
             </div>
@@ -92,9 +92,9 @@ export default function Footer() {
           <div>
             <h4 style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 600, color: "#3E2F2F", marginBottom: 16 }}>Contact</h4>
             {[
-              { Icon: Mail,    text: "hello@craftverse.in" },
-              { Icon: Phone,   text: "+91 98765 43210" },
-              { Icon: MapPin,  text: "Rajkot, Gujarat, India" },
+              { Icon: Mail,   text: "hello@craftverse.in" },
+              { Icon: Phone,  text: "+91 98765 43210" },
+              { Icon: MapPin, text: "Rajkot, Gujarat, India" },
             ].map(({ Icon, text }, i) => (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 12 }}>
                 <Icon size={13} color="#C97B63" style={{ marginTop: 2, flexShrink: 0 }} />
