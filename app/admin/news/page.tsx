@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/store/authStore";
 import { Plus, Trash2, X, Check, Newspaper } from "lucide-react";
 import toast from "react-hot-toast";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 const emptyForm = { title: "", excerpt: "", content: "", author: "Craft Verse Team", tags: "", coverImage: "", published: true };
 const LBL = ({ children }: { children: string }) => <label style={{ display: "block", fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: 600, color: "#3E2F2F", marginBottom: 5, letterSpacing: "0.04em", textTransform: "uppercase" as const }}>{children}</label>;
@@ -40,7 +41,7 @@ function NewsModal({ onClose, onSave, token }: { onClose: () => void; onSave: ()
             <div><LBL>Author</LBL><input className="craft-input" value={form.author} onChange={e => set("author", e.target.value)} /></div>
             <div><LBL>Tags (comma separated)</LBL><input className="craft-input" value={form.tags} onChange={e => set("tags", e.target.value)} placeholder="DIY, Tips, News" /></div>
           </div>
-          <div><LBL>Cover Image URL</LBL><input className="craft-input" value={form.coverImage} onChange={e => set("coverImage", e.target.value)} placeholder="https://..." /></div>
+          <ImageUploader label="Cover Image" value={form.coverImage} onChange={url => set("coverImage", url)} />
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input type="checkbox" id="pub" checked={form.published} onChange={e => set("published", e.target.checked)} style={{ width: 16, height: 16, accentColor: "#C97B63" }} />
             <label htmlFor="pub" style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13, color: "#7A6060", cursor: "pointer" }}>Publish immediately</label>
