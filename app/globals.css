@@ -107,3 +107,38 @@ h1, h2, h3, h4 { font-family: var(--font-serif); color: var(--text); line-height
   font-family: var(--font-sans); font-size: 11px; font-weight: 600;
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
 }
+
+/* ── Enhanced reveal animations ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered children */
+.reveal:nth-child(2) { transition-delay: 0.08s; }
+.reveal:nth-child(3) { transition-delay: 0.16s; }
+.reveal:nth-child(4) { transition-delay: 0.24s; }
+
+/* Enhanced button glow */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -60%;
+  width: 40%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+.btn-primary:hover::before { left: 120%; }
+
+/* Smooth page transitions */
+* { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
