@@ -1,180 +1,308 @@
 "use client";
 export const dynamic = 'force-dynamic';
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { ArrowRight, BarChart3, Package, Sparkles, Printer, Shirt, CheckCircle2 } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 import { Product } from "@/types";
 
+/* ─────────────────── DATA ─────────────────── */
 const categories = [
-  { icon: BarChart3, label: "DIY Charts", desc: "Hand-crafted charts for school & college projects, beautifully made", href: "/diy-charts", symbol: "📊" },
-  { icon: Package, label: "DIY Models", desc: "Working 3D models for science & geography — built with care", href: "/diy-models", symbol: "📦" },
-  { icon: Sparkles, label: "Custom Projects", desc: "Your idea, our hands. We build it from scratch, just for you", href: "/custom-models", symbol: "✦" },
-  { icon: Printer, label: "3D Printing", desc: "Upload your design — we print it with precision and craft", href: "/3d-printing", symbol: "🖨" },
-  { icon: Shirt, label: "Custom Clothes", desc: "Wearable art — apparel designed exactly as you imagine it", href: "/custom-clothes", symbol: "✂" },
+  { icon: BarChart3, label: "DIY Charts",      desc: "Hand-crafted charts for school & college projects, beautifully made", href: "/diy-charts",     emoji: "📊", rot: -2 },
+  { icon: Package,   label: "DIY Models",      desc: "Working 3D models for science & geography — built with care",         href: "/diy-models",     emoji: "📦", rot:  1 },
+  { icon: Sparkles,  label: "Custom Projects", desc: "Your idea, our hands. We build it from scratch, just for you",        href: "/custom-models",  emoji: "✦",  rot: -1 },
+  { icon: Printer,   label: "3D Printing",     desc: "Upload your design — we print it with precision and craft",           href: "/3d-printing",    emoji: "🖨",  rot:  2 },
+  { icon: Shirt,     label: "Custom Clothes",  desc: "Wearable art — apparel designed exactly as you imagine it",           href: "/custom-clothes", emoji: "✂",  rot: -2 },
 ];
-
 const steps = [
-  { num: "01", title: "Choose or Request", desc: "Browse our catalog or tell us your idea. We love bringing fresh visions to life.", icon: "✦" },
-  { num: "02", title: "We Craft It", desc: "Our makers work with real materials and real attention to every detail.", icon: "◈" },
-  { num: "03", title: "Delivered to You", desc: "Packaged with care and delivered right to your doorstep.", icon: "◎" },
+  { num:"01", title:"Choose or Request", desc:"Browse our catalog or tell us your idea. We love bringing fresh visions to life.", icon:"✦" },
+  { num:"02", title:"We Craft It",       desc:"Our makers work with real materials and real attention to every detail.",          icon:"◈" },
+  { num:"03", title:"Delivered to You",  desc:"Packaged with care and delivered right to your doorstep.",                        icon:"◎" },
 ];
-
 const testimonials = [
-  { name: "Priya Sharma", role: "Student, Class 12", text: "The science model was absolutely stunning. My teacher was amazed — and so was I. Got an A+ and it still sits on my desk.", initials: "PS" },
-  { name: "Rahul Mehta", role: "Engineering Student", text: "3D printing service delivered exactly what I envisioned. The quality felt professional, not student-project level at all.", initials: "RM" },
-  { name: "Ananya Singh", role: "Project Coordinator", text: "Ordered charts for our school exhibition. Premium quality, on time, and the team was so helpful throughout.", initials: "AS" },
+  { name:"Priya Sharma",  role:"Student, Class 12",     text:"The science model was absolutely stunning. My teacher was amazed — and so was I. Got an A+ and it still sits on my desk.", initials:"PS" },
+  { name:"Rahul Mehta",   role:"Engineering Student",   text:"3D printing service delivered exactly what I envisioned. The quality felt professional, not student-project level at all.", initials:"RM" },
+  { name:"Ananya Singh",  role:"Project Coordinator",   text:"Ordered charts for our school exhibition. Premium quality, on time, and the team was so helpful throughout.",              initials:"AS" },
 ];
 
-/* Floating particles canvas */
-function ParticleField() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    let W = canvas.width = window.innerWidth;
-    let H = canvas.height = window.innerHeight;
-    const symbols = ["✦", "◈", "◎", "·"];
-    const particles = Array.from({ length: 50 }, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
-      r: Math.random() * 2 + 0.8,
-      opacity: Math.random() * 0.35 + 0.08,
-      isSymbol: Math.random() > 0.65,
-      sym: symbols[Math.floor(Math.random() * symbols.length)],
-    }));
-    let raf: number;
-    const draw = () => {
-      ctx.clearRect(0, 0, W, H);
-      particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < -20) p.x = W + 20; if (p.x > W + 20) p.x = -20;
-        if (p.y < -20) p.y = H + 20; if (p.y > H + 20) p.y = -20;
-        ctx.globalAlpha = p.opacity;
-        ctx.fillStyle = "#C97B63";
-        if (p.isSymbol) {
-          ctx.font = `${p.r * 6}px Georgia, serif`;
-          ctx.fillText(p.sym, p.x, p.y);
-        } else {
-          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-        }
-      });
-      ctx.globalAlpha = 1;
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-    const onResize = () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; };
-    window.addEventListener("resize", onResize);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", onResize); };
-  }, []);
-  return <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }} />;
-}
+/* ─────────── CUSTOM CURSOR ─────────── */
+function Cursor() {
+  const dot   = useRef<HTMLDivElement>(null);
+  const ring  = useRef<HTMLDivElement>(null);
+  const trail = useRef<HTMLDivElement[]>([]);
+  const pos   = useRef({ x:-200, y:-200 });
+  const rPos  = useRef({ x:-200, y:-200 });
+  const big   = useRef(false);
 
-/* Custom cursor */
-function CustomCursor() {
-  const dotRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
-  const pos = useRef({ x: -100, y: -100 });
-  const ringPos = useRef({ x: -100, y: -100 });
   useEffect(() => {
-    const onMove = (e: MouseEvent) => { pos.current = { x: e.clientX, y: e.clientY }; };
-    window.addEventListener("mousemove", onMove);
+    const move = (e: MouseEvent) => { pos.current = { x: e.clientX, y: e.clientY }; };
+    window.addEventListener("mousemove", move);
+
     let raf: number;
     const tick = () => {
-      ringPos.current.x += (pos.current.x - ringPos.current.x) * 0.13;
-      ringPos.current.y += (pos.current.y - ringPos.current.y) * 0.13;
-      if (dotRef.current) dotRef.current.style.transform = `translate(${pos.current.x - 4}px, ${pos.current.y - 4}px)`;
-      if (ringRef.current) ringRef.current.style.transform = `translate(${ringPos.current.x - 20}px, ${ringPos.current.y - 20}px)`;
+      rPos.current.x += (pos.current.x - rPos.current.x) * 0.11;
+      rPos.current.y += (pos.current.y - rPos.current.y) * 0.11;
+      if (dot.current) {
+        dot.current.style.transform = `translate(${pos.current.x}px,${pos.current.y}px) translate(-50%,-50%)`;
+      }
+      if (ring.current) {
+        const s = big.current ? 1.7 : 1;
+        ring.current.style.transform = `translate(${rPos.current.x}px,${rPos.current.y}px) translate(-50%,-50%) scale(${s})`;
+      }
       raf = requestAnimationFrame(tick);
     };
     tick();
-    const grow = () => { if (ringRef.current) { ringRef.current.style.width = "48px"; ringRef.current.style.height = "48px"; ringRef.current.style.marginTop = "-4px"; ringRef.current.style.marginLeft = "-4px"; } };
-    const shrink = () => { if (ringRef.current) { ringRef.current.style.width = "40px"; ringRef.current.style.height = "40px"; ringRef.current.style.marginTop = "0"; ringRef.current.style.marginLeft = "0"; } };
-    document.addEventListener("mouseenter", grow, true);
-    document.querySelectorAll("a, button").forEach(el => { el.addEventListener("mouseenter", grow); el.addEventListener("mouseleave", shrink); });
-    return () => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(raf); };
+
+    const grow  = () => { big.current = true; };
+    const shrink= () => { big.current = false; };
+    document.querySelectorAll("a,button,[data-cursor]").forEach(el => {
+      el.addEventListener("mouseenter", grow);
+      el.addEventListener("mouseleave", shrink);
+    });
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("mousemove", move); };
   }, []);
+
   return (
     <>
-      <div ref={dotRef} style={{ position: "fixed", top: 0, left: 0, width: 8, height: 8, borderRadius: "50%", background: "#C97B63", pointerEvents: "none", zIndex: 99999 }} />
-      <div ref={ringRef} style={{ position: "fixed", top: 0, left: 0, width: 40, height: 40, borderRadius: "50%", border: "1.5px solid rgba(201,123,99,0.55)", pointerEvents: "none", zIndex: 99998, transition: "width 0.2s, height 0.2s, border-color 0.2s" }} />
+      {/* Dot */}
+      <div ref={dot} style={{
+        position:"fixed", top:0, left:0, zIndex:99999, pointerEvents:"none",
+        width:8, height:8, borderRadius:"50%", background:"#C97B63",
+        mixBlendMode:"multiply", transition:"background 0.2s",
+      }}/>
+      {/* Ring */}
+      <div ref={ring} style={{
+        position:"fixed", top:0, left:0, zIndex:99998, pointerEvents:"none",
+        width:38, height:38, borderRadius:"50%",
+        border:"1.5px solid rgba(201,123,99,0.55)",
+        transition:"transform 0.08s ease, border-color 0.2s, width 0.25s, height 0.25s",
+      }}/>
     </>
   );
 }
 
-/* 3D tilt card */
-function TiltCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+/* ─────────── NOISE SPOTLIGHT follows cursor ─────────── */
+function Spotlight() {
   const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const move = (e: MouseEvent) => {
+      if (ref.current) {
+        ref.current.style.background =
+          `radial-gradient(520px circle at ${e.clientX}px ${e.clientY}px, rgba(201,123,99,0.1) 0%, transparent 65%)`;
+      }
+    };
+    window.addEventListener("mousemove", move);
+    return () => window.removeEventListener("mousemove", move);
+  }, []);
+  return <div ref={ref} style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:2, transition:"background 0.15s ease" }}/>;
+}
+
+/* ─────────── PARTICLE CANVAS ─────────── */
+function Particles() {
+  const cv = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = cv.current; if (!c) return;
+    const ctx = c.getContext("2d")!;
+    let W = c.width = window.innerWidth, H = c.height = window.innerHeight;
+    const SYMS = ["✦","◈","◎","·","✿","◇"];
+    const pts = Array.from({length:65}, ()=>({
+      x: Math.random()*W, y: Math.random()*H,
+      vx:(Math.random()-.5)*.28, vy:(Math.random()-.5)*.28,
+      r: Math.random()*2+.6, op: Math.random()*.38+.07,
+      sym: Math.random()>.6, s: SYMS[Math.floor(Math.random()*SYMS.length)],
+    }));
+    let id: number;
+    const draw = () => {
+      ctx.clearRect(0,0,W,H);
+      pts.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x<-20)p.x=W+20; if(p.x>W+20)p.x=-20;
+        if(p.y<-20)p.y=H+20; if(p.y>H+20)p.y=-20;
+        ctx.globalAlpha = p.op;
+        ctx.fillStyle = "#C97B63";
+        if(p.sym){
+          ctx.font = `${p.r*7}px Georgia,serif`;
+          ctx.fillText(p.s, p.x, p.y);
+        } else {
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+        }
+      });
+      ctx.globalAlpha=1;
+      id = requestAnimationFrame(draw);
+    };
+    draw();
+    const resize=()=>{ W=c.width=window.innerWidth; H=c.height=window.innerHeight; };
+    window.addEventListener("resize",resize);
+    return ()=>{ cancelAnimationFrame(id); window.removeEventListener("resize",resize); };
+  },[]);
+  return <canvas ref={cv} style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:1}}/>;
+}
+
+/* ─────────── ANIMATED MESH BACKGROUND ─────────── */
+function MeshBg() {
+  return (
+    <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0,opacity:0.55}} viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <radialGradient id="g1" cx="20%" cy="30%">
+          <stop offset="0%" stopColor="#C97B63" stopOpacity="0.18"/>
+          <stop offset="100%" stopColor="#C97B63" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="g2" cx="75%" cy="65%">
+          <stop offset="0%" stopColor="#A85C45" stopOpacity="0.14"/>
+          <stop offset="100%" stopColor="#A85C45" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="g3" cx="50%" cy="90%">
+          <stop offset="0%" stopColor="#EAD8C0" stopOpacity="0.6"/>
+          <stop offset="100%" stopColor="#EAD8C0" stopOpacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="800" height="600" fill="url(#g1)">
+        <animateTransform attributeName="transform" type="translate" values="0 0;30 -20;-20 30;0 0" dur="12s" repeatCount="indefinite"/>
+      </rect>
+      <rect width="800" height="600" fill="url(#g2)">
+        <animateTransform attributeName="transform" type="translate" values="0 0;-25 15;20 -25;0 0" dur="15s" repeatCount="indefinite"/>
+      </rect>
+      <rect width="800" height="600" fill="url(#g3)"/>
+    </svg>
+  );
+}
+
+/* ─────────── SCRAMBLE TEXT ─────────── */
+const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789✦◈◎";
+function useScramble(target: string, trigger: boolean, delay = 0) {
+  const [text, setText] = useState(target);
+  useEffect(() => {
+    if (!trigger) return;
+    let frame = 0;
+    const totalFrames = 22;
+    const t = setTimeout(() => {
+      const interval = setInterval(() => {
+        frame++;
+        const progress = frame / totalFrames;
+        setText(target.split("").map((ch, i) => {
+          if (ch === " ") return " ";
+          if (i / target.length < progress) return ch;
+          return CHARS[Math.floor(Math.random() * CHARS.length)];
+        }).join(""));
+        if (frame >= totalFrames) { clearInterval(interval); setText(target); }
+      }, 35);
+    }, delay);
+    return () => clearTimeout(t);
+  }, [trigger, target, delay]);
+  return text;
+}
+
+/* ─────────── CHAR-BY-CHAR REVEAL ─────────── */
+function CharReveal({ text, delay = 0, style }: { text: string; delay?: number; style?: React.CSSProperties }) {
+  return (
+    <span style={style}>
+      {text.split("").map((ch, i) => (
+        <span key={i} className="hero-char" style={{
+          animationDelay: `${delay + i * 0.028}s`,
+          display: ch === " " ? "inline" : "inline-block",
+        }}>
+          {ch === " " ? "\u00A0" : ch}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/* ─────────── 3D TILT ─────────── */
+function Tilt({ children, style, intensity=11 }: { children: React.ReactNode; style?: React.CSSProperties; intensity?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const glow = useRef<HTMLDivElement>(null);
   const onMove = (e: React.MouseEvent) => {
     const el = ref.current; if (!el) return;
     const { left, top, width, height } = el.getBoundingClientRect();
-    const x = (e.clientX - left) / width - 0.5;
-    const y = (e.clientY - top) / height - 0.5;
-    el.style.transform = `perspective(700px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateY(-6px) scale(1.02)`;
-    el.style.boxShadow = `${-x * 18}px ${-y * 18}px 36px rgba(62,47,47,0.14)`;
+    const x = (e.clientX - left) / width - .5;
+    const y = (e.clientY - top) / height - .5;
+    el.style.transform = `perspective(700px) rotateY(${x*intensity}deg) rotateX(${-y*intensity}deg) translateY(-8px) scale(1.03)`;
+    el.style.boxShadow = `${-x*22}px ${-y*22}px 44px rgba(62,47,47,0.16)`;
+    if(glow.current){
+      glow.current.style.background=`radial-gradient(circle at ${(x+.5)*100}% ${(y+.5)*100}%, rgba(201,123,99,0.13), transparent 65%)`;
+    }
   };
   const onLeave = () => {
     const el = ref.current; if (!el) return;
     el.style.transform = "perspective(700px) rotateY(0) rotateX(0) translateY(0) scale(1)";
     el.style.boxShadow = "0 2px 12px rgba(62,47,47,0.08)";
+    if(glow.current) glow.current.style.background="transparent";
   };
   return (
     <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave}
-      style={{ ...style, transition: "transform 0.12s ease, box-shadow 0.12s ease", willChange: "transform" }}>
+      style={{...style, transition:"transform 0.1s ease, box-shadow 0.1s ease", willChange:"transform", position:"relative"}}>
+      <div ref={glow} style={{position:"absolute",inset:0,borderRadius:"inherit",pointerEvents:"none",transition:"background 0.15s",zIndex:1}}/>
+      <div style={{position:"relative",zIndex:2,height:"100%"}}>{children}</div>
+    </div>
+  );
+}
+
+/* ─────────── MAGNETIC BUTTON ─────────── */
+function MagneticWrap({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const onMove = (e: React.MouseEvent) => {
+    const el = ref.current; if (!el) return;
+    const { left, top, width, height } = el.getBoundingClientRect();
+    const x = (e.clientX - left - width/2) * 0.22;
+    const y = (e.clientY - top - height/2) * 0.22;
+    el.style.transform = `translate(${x}px,${y}px)`;
+  };
+  const onLeave = () => { if(ref.current) ref.current.style.transform="translate(0,0)"; };
+  return (
+    <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{display:"inline-block", transition:"transform 0.4s cubic-bezier(0.34,1.56,0.64,1)"}}>
       {children}
     </div>
   );
 }
 
-/* Animated number counter */
-function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
-  const [val, setVal] = useState(0);
+/* ─────────── COUNTER ─────────── */
+function Counter({ to, suffix="" }: { to: number; suffix?: string }) {
+  const [v, setV] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
-  const started = useRef(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !started.current) {
-        started.current = true;
-        const dur = 1400;
-        const t0 = performance.now();
-        const tick = (now: number) => {
-          const p = Math.min((now - t0) / dur, 1);
-          const ease = 1 - Math.pow(1 - p, 3);
-          setVal(Math.round(ease * to));
-          if (p < 1) requestAnimationFrame(tick);
+  const done = useRef(false);
+  useEffect(()=>{
+    const obs = new IntersectionObserver(entries=>{
+      if(entries[0].isIntersecting && !done.current){
+        done.current=true;
+        const dur=1600, t0=performance.now();
+        const tick=(now:number)=>{
+          const p = Math.min((now-t0)/dur,1);
+          setV(Math.round((1-Math.pow(1-p,3))*to));
+          if(p<1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
       }
-    }, { threshold: 0.5 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [to]);
-  return <span ref={ref}>{val}{suffix}</span>;
+    },{threshold:0.5});
+    if(ref.current) obs.observe(ref.current);
+    return ()=>obs.disconnect();
+  },[to]);
+  return <span ref={ref}>{v}{suffix}</span>;
 }
 
-/* Scroll reveal */
-function useScrollReveal() {
-  useEffect(() => {
+/* ─────────── SCROLL REVEAL ─────────── */
+function useReveal() {
+  useEffect(()=>{
     const obs = new IntersectionObserver(
-      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("visible"); }),
-      { threshold: 0.08 }
+      entries=>entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add("visible"); }),
+      {threshold:0.07}
     );
-    document.querySelectorAll(".reveal").forEach(el => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
+    document.querySelectorAll(".reveal").forEach(el=>obs.observe(el));
+    return ()=>obs.disconnect();
+  },[]);
 }
 
-/* Marquee */
+/* ─────────── MARQUEE ─────────── */
 function Marquee() {
-  const items = ["DIY Charts", "Custom Clothes", "3D Printing", "Hand-crafted Models", "School Projects", "Custom Creations", "Made in India ✦"];
-  const all = [...items, ...items, ...items];
+  const items=["DIY Charts","Custom Clothes","3D Printing","Handcrafted Models","School Projects","Custom Creations","Made with Love in India ✦"];
+  const all=[...items,...items,...items];
   return (
-    <div style={{ overflow: "hidden", background: "#C97B63", padding: "13px 0" }}>
-      <div className="marquee-inner" style={{ display: "flex", gap: 52, whiteSpace: "nowrap", width: "max-content" }}>
-        {all.map((item, i) => (
-          <span key={i} style={{ fontFamily: "'Poppins',sans-serif", fontSize: 11.5, fontWeight: 600, color: "white", letterSpacing: "0.14em", textTransform: "uppercase", flexShrink: 0 }}>
-            {item}
+    <div style={{overflow:"hidden",background:"#C97B63",padding:"14px 0",position:"relative",zIndex:10}}>
+      <div className="marquee-inner" style={{display:"flex",gap:56,whiteSpace:"nowrap",width:"max-content"}}>
+        {all.map((s,i)=>(
+          <span key={i} style={{fontFamily:"'Poppins',sans-serif",fontSize:11,fontWeight:700,color:"white",letterSpacing:"0.18em",textTransform:"uppercase",flexShrink:0}}>
+            {s}
           </span>
         ))}
       </div>
@@ -182,341 +310,475 @@ function Marquee() {
   );
 }
 
-/* Wavy SVG divider */
-function Wave({ color }: { color: string }) {
+/* ─────────── WAVE DIVIDER ─────────── */
+function Wave({bg, fill}: {bg:string; fill:string}) {
   return (
-    <div style={{ lineHeight: 0, display: "block" }}>
-      <svg viewBox="0 0 1440 56" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: "block", width: "100%", height: 56 }}>
-        <path d="M0,28 C240,56 480,0 720,28 C960,56 1200,0 1440,28 L1440,56 L0,56 Z" fill={color} />
+    <div style={{lineHeight:0, background:bg}}>
+      <svg viewBox="0 0 1440 60" preserveAspectRatio="none" style={{display:"block",width:"100%",height:60}}>
+        <path d="M0,30 C360,65 1080,-5 1440,30 L1440,60 L0,60 Z" fill={fill}/>
       </svg>
     </div>
   );
 }
 
+/* ─────────── INK UNDERLINE ─────────── */
+function InkLine({visible}: {visible:boolean}) {
+  return (
+    <svg viewBox="0 0 300 22" style={{width:300,height:22,display:"block",margin:"10px auto 0"}}>
+      <path d="M4 16 C50 5, 100 20, 150 12 C200 3, 255 18, 296 13"
+        stroke="#C97B63" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.55"
+        strokeDasharray="400" strokeDashoffset={visible?"0":"400"}
+        style={{transition:"stroke-dashoffset 1.1s cubic-bezier(0.16,1,0.3,1)"}}/>
+    </svg>
+  );
+}
+
+/* ─────────── SECTION HEADING ─────────── */
+function SectionHead({badge, title, sub}: {badge:string; title:string; sub?:string}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [vis, setVis] = useState(false);
+  useEffect(()=>{
+    const obs = new IntersectionObserver(e=>{ if(e[0].isIntersecting){ setVis(true); obs.disconnect(); }},{threshold:0.3});
+    if(ref.current) obs.observe(ref.current);
+    return ()=>obs.disconnect();
+  },[]);
+  return (
+    <div ref={ref} style={{textAlign:"center",marginBottom:64}}>
+      <span className="badge" style={{marginBottom:18,opacity:vis?1:0,transition:"opacity 0.5s 0.1s"}}><span>✦</span>{badge}</span>
+      <h2 style={{fontSize:"clamp(30px,4.5vw,48px)",fontWeight:700,lineHeight:1.15,opacity:vis?1:0,transform:vis?"translateY(0)":"translateY(28px)",transition:"all 0.7s cubic-bezier(0.16,1,0.3,1) 0.2s"}}>
+        {title}
+      </h2>
+      <InkLine visible={vis}/>
+      {sub && <p style={{fontFamily:"'Poppins',sans-serif",fontSize:14,color:"#7A6060",marginTop:14,maxWidth:480,margin:"14px auto 0",opacity:vis?1:0,transition:"opacity 0.6s 0.4s"}}>{sub}</p>}
+    </div>
+  );
+}
+
+/* ─────────── FEATURED CARD WITH RIBBON ─────────── */
+function CategoryCard({cat, index}: {cat: typeof categories[0]; index: number}) {
+  const [hov, setHov] = useState(false);
+  return (
+    <Link href={cat.href} style={{textDecoration:"none"}} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>
+      <Tilt style={{
+        background:"#FAF3E8",
+        border:`1px solid ${hov?"rgba(201,123,99,0.35)":"rgba(62,47,47,0.1)"}`,
+        borderRadius:22,
+        boxShadow: hov ? "0 20px 50px rgba(62,47,47,0.15)" : "0 2px 12px rgba(62,47,47,0.07)",
+        height:"100%",
+        opacity:0,
+        animation:`cardUp 0.7s cubic-bezier(0.16,1,0.3,1) ${0.05+index*0.1}s forwards`,
+        transition:"border-color 0.25s, box-shadow 0.25s",
+        cursor:"none",
+      }}>
+        <div style={{padding:"30px 26px",height:"100%",position:"relative",overflow:"hidden"}}>
+          {/* Top shimmer strip */}
+          <div style={{
+            position:"absolute",top:0,left:0,right:0,height:3,
+            background:`linear-gradient(90deg,transparent,#C97B63,transparent)`,
+            transform:hov?"scaleX(1)":"scaleX(0)",
+            transformOrigin:"left",
+            transition:"transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+          }}/>
+
+          {/* Watermark emoji */}
+          <div style={{position:"absolute",bottom:-10,right:-8,fontSize:72,opacity:hov?0.12:0.06,transition:"opacity 0.3s, transform 0.3s",transform:hov?"scale(1.1) rotate(-8deg)":"scale(1) rotate(-5deg)",filter:"grayscale(1) sepia(1) hue-rotate(-10deg)"}}>
+            {cat.emoji}
+          </div>
+
+          {/* Icon */}
+          <div style={{
+            width:50,height:50,borderRadius:14,
+            background:`linear-gradient(135deg, rgba(201,123,99,${hov?0.18:0.1}), rgba(234,216,192,${hov?0.8:0.5}))`,
+            display:"flex",alignItems:"center",justifyContent:"center",
+            marginBottom:20,
+            boxShadow: hov?"0 4px 16px rgba(201,123,99,0.2)":"none",
+            transition:"all 0.3s",
+          }}>
+            <cat.icon size={21} color="#C97B63"/>
+          </div>
+
+          <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:600,color:"#3E2F2F",marginBottom:10,transition:"color 0.2s",..( hov ? {color:"#C97B63"} : {})}}>
+            {cat.label}
+          </h3>
+          <p style={{fontFamily:"'Poppins',sans-serif",fontSize:12.5,color:"#7A6060",lineHeight:1.7,marginBottom:22}}>
+            {cat.desc}
+          </p>
+          <div style={{display:"flex",alignItems:"center",gap:5,color:"#C97B63",fontSize:12,fontWeight:700,fontFamily:"'Poppins',sans-serif",transform:hov?"translateX(4px)":"translateX(0)",transition:"transform 0.25s"}}>
+            Explore <ArrowRight size={13}/>
+          </div>
+        </div>
+      </Tilt>
+    </Link>
+  );
+}
+
+/* ─────────── HERO TEXT STRIPE ─────────── */
+function HeroTag({text, delay, rotate=0}: {text:string; delay:number; rotate?:number}) {
+  return (
+    <div style={{
+      display:"inline-block",
+      background:"rgba(201,123,99,0.1)",
+      border:"1px solid rgba(201,123,99,0.25)",
+      borderRadius:50,
+      padding:"6px 18px",
+      fontFamily:"'Poppins',sans-serif",
+      fontSize:12,
+      fontWeight:600,
+      color:"#C97B63",
+      letterSpacing:"0.1em",
+      textTransform:"uppercase",
+      transform:`rotate(${rotate}deg)`,
+      opacity:0,
+      animation:`tagFly 0.7s cubic-bezier(0.34,1.56,0.64,1) ${delay}s forwards`,
+    }}>
+      {text}
+    </div>
+  );
+}
+
+/* ─────────────────── MAIN PAGE ─────────────────── */
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
-  const [show, setShow] = useState(false);
-  useScrollReveal();
+  const [loading, setLoading] = useState(true);
+  const [curtainDone, setCurtainDone] = useState(false);
+  useReveal();
 
-  useEffect(() => {
-    const t = setTimeout(() => setShow(true), 80);
+  const line1 = "Craft Verse";
+  const line2 = "Where Creativity";
+  const line2b = "Comes to Life";
+
+  useEffect(()=>{
+    const t=setTimeout(()=>setCurtainDone(true), 950);
     fetch("/api/products?featured=true&limit=4")
-      .then(r => r.json())
-      .then(d => { setProducts(d.products || []); setLoadingProducts(false); })
-      .catch(() => setLoadingProducts(false));
-    return () => clearTimeout(t);
-  }, []);
+      .then(r=>r.json())
+      .then(d=>{setProducts(d.products||[]); setLoading(false);})
+      .catch(()=>setLoading(false));
+    return ()=>clearTimeout(t);
+  },[]);
 
   return (
     <>
-      <CustomCursor />
-      <div style={{ background: "#F5E9DA", cursor: "none" }}>
+      {/* ─ Curtain ─ */}
+      {!curtainDone && <div className="page-curtain"/>}
 
-        {/* HERO */}
-        <section style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "linear-gradient(150deg, #F5E9DA 0%, #EAD8C0 55%, #F5E9DA 100%)", paddingTop: 80 }}>
-          <ParticleField />
+      <Cursor/>
+      <Spotlight/>
 
-          {/* Floating deco */}
-          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}>
-            <div className="f-a" style={{ position: "absolute", top: "18%", left: "7%", fontSize: 28, opacity: 0.17, filter: "sepia(1)" }}>✂️</div>
-            <div className="f-b" style={{ position: "absolute", top: "28%", right: "9%", fontSize: 24, opacity: 0.14, filter: "sepia(1)" }}>✏️</div>
-            <div className="f-c" style={{ position: "absolute", bottom: "30%", left: "11%", fontSize: 22, opacity: 0.13, filter: "sepia(1)" }}>📐</div>
-            <div className="f-a" style={{ position: "absolute", bottom: "24%", right: "7%", fontSize: 24, opacity: 0.13, filter: "sepia(1)", animationDelay: "1.2s" }}>🎨</div>
-            <svg style={{ position: "absolute", top: "8%", right: "18%", opacity: 0.08 }} viewBox="0 0 130 130" width="130" height="130">
-              <circle cx="65" cy="65" r="55" stroke="#C97B63" strokeWidth="1.5" strokeDasharray="6 4" fill="none" />
-              <circle cx="65" cy="65" r="35" stroke="#C97B63" strokeWidth="1" strokeDasharray="3 5" fill="none" />
+      <div style={{background:"#F5E9DA", cursor:"none", overflow:"hidden"}}>
+
+        {/* ════════════════ HERO ════════════════ */}
+        <section style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden",background:"linear-gradient(145deg,#F5E9DA 0%,#EAD8C0 50%,#F2E4D0 100%)",paddingTop:90}}>
+          <MeshBg/>
+          <Particles/>
+
+          {/* Floating craft icons */}
+          <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:3}}>
+            <div className="float-a" style={{position:"absolute",top:"16%",left:"7%",fontSize:36,opacity:0.2,filter:"sepia(1) saturate(0.6)"}}>✂️</div>
+            <div className="float-b" style={{position:"absolute",top:"25%",right:"8%",fontSize:30,opacity:0.18,filter:"sepia(1) saturate(0.6)"}}>✏️</div>
+            <div className="float-c" style={{position:"absolute",bottom:"28%",left:"10%",fontSize:28,opacity:0.16,filter:"sepia(1) saturate(0.6)"}}>📐</div>
+            <div className="float-d" style={{position:"absolute",bottom:"20%",right:"6%",fontSize:30,opacity:0.17,filter:"sepia(1) saturate(0.6)"}}>🎨</div>
+            <div className="float-a" style={{position:"absolute",top:"60%",left:"4%",fontSize:22,opacity:0.12,filter:"sepia(1)",animationDelay:"2s"}}>📌</div>
+            <div className="float-b" style={{position:"absolute",top:"45%",right:"3%",fontSize:20,opacity:0.11,filter:"sepia(1)",animationDelay:"1s"}}>📏</div>
+
+            {/* Decorative rings */}
+            <svg style={{position:"absolute",top:"9%",right:"16%",opacity:0.1}} viewBox="0 0 160 160" width="160" height="160">
+              <circle cx="80" cy="80" r="70" stroke="#C97B63" strokeWidth="1.5" strokeDasharray="8 5" fill="none">
+                <animateTransform attributeName="transform" type="rotate" from="0 80 80" to="360 80 80" dur="30s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="80" cy="80" r="45" stroke="#C97B63" strokeWidth="1" strokeDasharray="4 6" fill="none">
+                <animateTransform attributeName="transform" type="rotate" from="360 80 80" to="0 80 80" dur="20s" repeatCount="indefinite"/>
+              </circle>
             </svg>
-            <svg style={{ position: "absolute", bottom: "12%", left: "4%", opacity: 0.07 }} viewBox="0 0 180 180" width="180" height="180">
-              <path d="M90 20 C140 15, 170 55, 165 100 C160 145, 128 175, 90 170 C48 165, 15 132, 18 90 C22 45, 50 25, 90 20Z" fill="#C97B63" />
+
+            {/* Dot matrix */}
+            <svg style={{position:"absolute",top:"7%",left:"4%",opacity:0.12}} viewBox="0 0 110 110" width="110" height="110">
+              {[0,1,2,3,4].map(r=>[0,1,2,3,4].map(c=><circle key={`${r}-${c}`} cx={11+c*22} cy={11+r*22} r="2.5" fill="#C97B63"/>))}
             </svg>
-            <svg style={{ position: "absolute", top: "6%", left: "4%", opacity: 0.1 }} viewBox="0 0 100 100" width="100" height="100">
-              {[0,1,2,3,4].map(r => [0,1,2,3,4].map(c => <circle key={`${r}-${c}`} cx={10+c*20} cy={10+r*20} r="2" fill="#C97B63" />))}
+            <svg style={{position:"absolute",bottom:"10%",right:"4%",opacity:0.12}} viewBox="0 0 110 110" width="110" height="110">
+              {[0,1,2,3,4].map(r=>[0,1,2,3,4].map(c=><circle key={`${r}-${c}`} cx={11+c*22} cy={11+r*22} r="2.5" fill="#C97B63"/>))}
             </svg>
-            {/* Radial glow */}
-            <div style={{ position: "absolute", top: "28%", left: "50%", transform: "translate(-50%,-50%)", width: 700, height: 550, background: "radial-gradient(ellipse, rgba(201,123,99,0.11) 0%, transparent 70%)" }} />
           </div>
 
           {/* Content */}
-          <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 820, padding: "0 28px" }}>
-            <div className="badge" style={{ marginBottom: 28, opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(18px)", transition: "all 0.6s cubic-bezier(0.16,1,0.3,1)" }}>
-              <span>✦</span> India's Creative Studio
+          <div style={{position:"relative",zIndex:4,textAlign:"center",maxWidth:860,padding:"0 28px"}}>
+
+            {/* Floating tags */}
+            <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginBottom:32}}>
+              <HeroTag text="School Projects" delay={0.8} rotate={-1}/>
+              <HeroTag text="India's Creative Studio" delay={0.95}/>
+              <HeroTag text="Custom Made" delay={1.1} rotate={1}/>
             </div>
 
-            <div style={{ overflow: "hidden" }}>
-              <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(44px,7.5vw,82px)", fontWeight: 700, lineHeight: 1.1, color: "#3E2F2F", marginBottom: 8, opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(44px)", transition: "all 0.75s cubic-bezier(0.16,1,0.3,1) 0.1s" }}>
-                Craft Verse –
+            {/* Main headline — char by char */}
+            <div style={{overflow:"hidden",marginBottom:4}}>
+              <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(48px,8vw,90px)",fontWeight:700,lineHeight:1.08,color:"#3E2F2F",display:"block"}}>
+                <CharReveal text={line1} delay={0.3}/>
+                <span style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(22px,3.5vw,40px)",fontWeight:400,color:"#C97B63",letterSpacing:"0.04em"}}> — </span>
               </h1>
             </div>
-            <div style={{ overflow: "hidden", marginBottom: 22 }}>
-              <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(38px,7vw,76px)", fontWeight: 400, fontStyle: "italic", lineHeight: 1.15, color: "#C97B63", opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(44px)", transition: "all 0.75s cubic-bezier(0.16,1,0.3,1) 0.2s" }}>
-                Where Creativity Comes to Life
+            <div style={{overflow:"hidden",marginBottom:4}}>
+              <h1 style={{fontFamily:"'Playfair Display',serif",fontStyle:"italic",fontSize:"clamp(36px,6.5vw,74px)",fontWeight:400,lineHeight:1.15,color:"#C97B63",display:"block"}}>
+                <CharReveal text={line2} delay={0.55}/>
+              </h1>
+            </div>
+            <div style={{overflow:"hidden",marginBottom:28}}>
+              <h1 style={{fontFamily:"'Playfair Display',serif",fontStyle:"italic",fontSize:"clamp(36px,6.5vw,74px)",fontWeight:400,lineHeight:1.15,color:"#C97B63",display:"block"}}>
+                <CharReveal text={line2b} delay={0.78}/>
               </h1>
             </div>
 
-            {/* Animated SVG underline */}
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 28, opacity: show ? 1 : 0, transition: "opacity 0.5s ease 0.35s" }}>
-              <svg viewBox="0 0 260 22" style={{ width: 260, height: 22 }}>
-                <path d="M4 14 C45 4, 90 20, 130 12 C170 3, 220 18, 256 12"
+            {/* Animated ink underline */}
+            <div style={{display:"flex",justifyContent:"center",marginBottom:30}}>
+              <svg viewBox="0 0 300 24" style={{width:300,height:24}}>
+                <path d="M4 16 C55 4, 110 22, 150 12 C190 2, 250 18, 296 12"
                   stroke="#C97B63" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.55"
-                  strokeDasharray="300" strokeDashoffset="300">
-                  <animate attributeName="stroke-dashoffset" from="300" to="0" dur="1s" begin="0.5s" fill="freeze" />
+                  strokeDasharray="400" strokeDashoffset="400">
+                  <animate attributeName="stroke-dashoffset" from="400" to="0" dur="1.2s" begin="1.2s" fill="freeze"/>
                 </path>
               </svg>
             </div>
 
-            <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: "clamp(14px,2vw,17px)", color: "#7A6060", lineHeight: 1.8, marginBottom: 42, opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(16px)", transition: "all 0.6s ease 0.38s" }}>
+            <p style={{fontFamily:"'Poppins',sans-serif",fontSize:"clamp(14px,2vw,17px)",color:"#7A6060",lineHeight:1.85,marginBottom:46,opacity:0,animation:"fadeUp 0.7s ease 1.4s forwards"}}>
               DIY Kits &nbsp;·&nbsp; School Projects &nbsp;·&nbsp; Custom Creations
             </p>
 
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(16px)", transition: "all 0.6s ease 0.48s" }}>
-              <Link href="/diy-charts" className="btn-primary" style={{ boxShadow: "0 6px 24px rgba(201,123,99,0.4)" }}>Explore Shop <ArrowRight size={15} /></Link>
-              <Link href="/custom-models" className="btn-secondary">Start a Custom Project</Link>
+            {/* CTA buttons — magnetic */}
+            <div style={{display:"flex",gap:16,justifyContent:"center",flexWrap:"wrap",marginBottom:66,opacity:0,animation:"fadeUp 0.7s ease 1.6s forwards"}}>
+              <MagneticWrap>
+                <Link href="/diy-charts" className="btn-primary" style={{fontSize:15,padding:"15px 34px"}}>
+                  Explore Shop <ArrowRight size={16}/>
+                </Link>
+              </MagneticWrap>
+              <MagneticWrap>
+                <Link href="/custom-models" className="btn-secondary" style={{fontSize:15,padding:"14px 34px"}}>
+                  Start a Custom Project
+                </Link>
+              </MagneticWrap>
             </div>
 
-            {/* Hero stats */}
-            <div style={{ display: "flex", gap: 52, justifyContent: "center", flexWrap: "wrap", marginTop: 66, opacity: show ? 1 : 0, transition: "opacity 0.8s ease 0.6s" }}>
-              {[
-                { to: 500, suffix: "+", label: "Projects Delivered" },
-                { to: 49, suffix: " ★", label: "Average Rating" },
-                { to: 48, suffix: "h", label: "Avg. Turnaround" },
-              ].map(stat => (
-                <div key={stat.label} style={{ textAlign: "center" }}>
-                  <p style={{ fontFamily: "'Playfair Display',serif", fontSize: 28, fontWeight: 700, color: "#C97B63" }}>
-                    <Counter to={stat.to} suffix={stat.suffix} />
+            {/* Stats */}
+            <div style={{display:"flex",gap:"clamp(28px,6vw,64px)",justifyContent:"center",flexWrap:"wrap",opacity:0,animation:"fadeUp 0.7s ease 1.8s forwards"}}>
+              {[{to:500,suf:"+",label:"Projects Delivered"},{to:49,suf:" ★",label:"Average Rating"},{to:48,suf:"h",label:"Avg. Turnaround"}].map(s=>(
+                <div key={s.label} style={{textAlign:"center"}}>
+                  <p style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(26px,3.5vw,34px)",fontWeight:700,color:"#C97B63"}}>
+                    <Counter to={s.to} suffix={s.suf}/>
                   </p>
-                  <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 11, color: "#A89080", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.1em" }}>{stat.label}</p>
+                  <p style={{fontFamily:"'Poppins',sans-serif",fontSize:11,color:"#A89080",marginTop:5,textTransform:"uppercase",letterSpacing:"0.1em"}}>{s.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Scroll cue */}
-          <div style={{ position: "absolute", bottom: 34, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-            <div className="scroll-cue" style={{ width: 1, height: 50, background: "linear-gradient(to bottom, transparent, #C97B63 60%, transparent)" }} />
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#C97B63" }} />
+          <div style={{position:"absolute",bottom:36,left:"50%",transform:"translateX(-50%)",display:"flex",flexDirection:"column",alignItems:"center",gap:6,zIndex:4}}>
+            <span style={{fontFamily:"'Poppins',sans-serif",fontSize:9,fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",color:"#A89080",opacity:0,animation:"fadeUp 0.5s ease 2.2s forwards"}}>Scroll</span>
+            <div style={{width:1,height:52,background:"linear-gradient(to bottom,transparent,#C97B63 55%,transparent)",animation:"scrollDrop 2.2s ease-in-out 2.2s infinite"}}/>
+            <div style={{width:5,height:5,borderRadius:"50%",background:"#C97B63"}}/>
           </div>
         </section>
 
-        {/* MARQUEE */}
-        <Marquee />
+        {/* ════════ MARQUEE ════════ */}
+        <Marquee/>
 
-        {/* CATEGORIES */}
-        <section style={{ padding: "110px 28px", background: "#FAF3E8" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 64 }} className="reveal">
-              <div className="badge" style={{ marginBottom: 16 }}>What We Offer</div>
-              <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 700, marginBottom: 10 }}>Everything You Need to Create</h2>
-              <div className="divider" />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(215px, 1fr))", gap: 22 }}>
-              {categories.map((cat, i) => (
-                <Link key={cat.label} href={cat.href} style={{ textDecoration: "none" }}>
-                  <TiltCard style={{
-                    background: "#FAF3E8", border: "1px solid rgba(62,47,47,0.1)", borderRadius: 20,
-                    boxShadow: "0 2px 12px rgba(62,47,47,0.08)", height: "100%",
-                    opacity: 0, animation: `catUp 0.65s cubic-bezier(0.16,1,0.3,1) ${0.08 + i * 0.09}s forwards`,
-                  }}>
-                    <div style={{ padding: "28px 24px", height: "100%", position: "relative", overflow: "hidden" }}>
-                      <div style={{ position: "absolute", top: 14, right: 16, fontSize: 22, opacity: 0.2 }}>{cat.symbol}</div>
-                      <div style={{ width: 46, height: 46, borderRadius: 13, background: "linear-gradient(135deg,#EAD8C0,#F5E9DA)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18, boxShadow: "0 2px 8px rgba(62,47,47,0.07)" }}>
-                        <cat.icon size={20} color="#C97B63" />
-                      </div>
-                      <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 17, fontWeight: 600, color: "#3E2F2F", marginBottom: 10 }}>{cat.label}</h3>
-                      <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 12.5, color: "#7A6060", lineHeight: 1.65, marginBottom: 20 }}>{cat.desc}</p>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#C97B63", fontSize: 12, fontWeight: 600, fontFamily: "'Poppins',sans-serif" }}>
-                        Explore <ArrowRight size={12} />
-                      </div>
-                    </div>
-                  </TiltCard>
-                </Link>
-              ))}
+        {/* ════════ CATEGORIES ════════ */}
+        <section style={{padding:"120px 28px",background:"#FAF3E8",position:"relative"}}>
+          {/* Background dots */}
+          <div style={{position:"absolute",inset:0,backgroundImage:"radial-gradient(rgba(201,123,99,0.08) 1.5px,transparent 1.5px)",backgroundSize:"36px 36px",pointerEvents:"none"}}/>
+          <div style={{maxWidth:1240,margin:"0 auto",position:"relative",zIndex:2}}>
+            <SectionHead badge="What We Offer" title="Everything You Need to Create" sub="Five ways to turn your imagination into something you can hold."/>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(215px,1fr))",gap:24}}>
+              {categories.map((cat,i)=><CategoryCard key={cat.label} cat={cat} index={i}/>)}
             </div>
           </div>
         </section>
 
-        <Wave color="#F5E9DA" />
+        <Wave bg="#FAF3E8" fill="#F5E9DA"/>
 
-        {/* HOW IT WORKS */}
-        <section style={{ padding: "100px 28px 120px", background: "#F5E9DA", position: "relative", overflow: "hidden" }}>
-          <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", opacity: 0.04 }}>
-            <defs>
-              <pattern id="hatch" width="28" height="28" patternUnits="userSpaceOnUse">
-                <path d="M0 0 L28 28 M28 0 L0 28" stroke="#C97B63" strokeWidth="0.7" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hatch)" />
+        {/* ════════ HOW IT WORKS ════════ */}
+        <section style={{padding:"100px 28px 130px",background:"#F5E9DA",position:"relative",overflow:"hidden"}}>
+          {/* Cross-hatch bg */}
+          <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",opacity:0.04}} xmlns="http://www.w3.org/2000/svg">
+            <defs><pattern id="hatch" width="26" height="26" patternUnits="userSpaceOnUse">
+              <path d="M0 0 L26 26 M26 0 L0 26" stroke="#C97B63" strokeWidth="0.7"/>
+            </pattern></defs>
+            <rect width="100%" height="100%" fill="url(#hatch)"/>
           </svg>
-          <div style={{ maxWidth: 1000, margin: "0 auto", position: "relative", zIndex: 2 }}>
-            <div style={{ textAlign: "center", marginBottom: 64 }} className="reveal">
-              <div className="badge" style={{ marginBottom: 16 }}>Simple Process</div>
-              <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 700, marginBottom: 10 }}>How It Works</h2>
-              <div className="divider" />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(270px, 1fr))", gap: 32 }}>
-              {steps.map((step, i) => (
-                <div key={i} className="reveal" style={{ animationDelay: `${i*0.13}s` }}>
-                  <div style={{ background: "#FAF3E8", border: "1px solid rgba(62,47,47,0.1)", borderRadius: 22, padding: "40px 32px", textAlign: "center", position: "relative", transition: "transform 0.3s ease, box-shadow 0.3s ease", cursor: "none" }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = "translateY(-9px)"; el.style.boxShadow = "0 22px 52px rgba(62,47,47,0.13)"; }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = "translateY(0)"; el.style.boxShadow = "none"; }}>
-                    <div style={{ position: "absolute", top: 20, right: 22, fontFamily: "'Playfair Display',serif", fontSize: 13, fontWeight: 700, color: "#C97B63", opacity: 0.3 }}>{step.num}</div>
-                    <div style={{ width: 68, height: 68, borderRadius: "50%", background: "linear-gradient(135deg,#EAD8C0,#F5E9DA)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 22px", boxShadow: "0 4px 20px rgba(201,123,99,0.18)", position: "relative" }}>
-                      <div style={{ position: "absolute", inset: -3, borderRadius: "50%", border: "1.5px dashed rgba(201,123,99,0.35)" }} />
-                      <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 26, color: "#C97B63" }}>{step.icon}</span>
+
+          <div style={{maxWidth:1060,margin:"0 auto",position:"relative",zIndex:2}}>
+            <SectionHead badge="Simple Process" title="How It Works" sub="Three steps from idea to doorstep."/>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:36,position:"relative"}}>
+              {steps.map((step,i)=>(
+                <div key={i} className="reveal" style={{transitionDelay:`${i*0.14}s`}}>
+                  <Tilt style={{background:"#FAF3E8",border:"1px solid rgba(62,47,47,0.1)",borderRadius:24,cursor:"none"}}>
+                    <div style={{padding:"44px 34px",textAlign:"center",position:"relative"}}>
+                      {/* Pulse ring */}
+                      <div style={{position:"absolute",top:20,right:22,fontFamily:"'Playfair Display',serif",fontSize:13,fontWeight:700,color:"#C97B63",opacity:0.3}}>{step.num}</div>
+
+                      <div style={{position:"relative",width:74,height:74,margin:"0 auto 26px"}}>
+                        <div style={{position:"absolute",inset:-6,borderRadius:"50%",border:"1.5px dashed rgba(201,123,99,0.35)",animation:"spinSlow 15s linear infinite"}}/>
+                        <div style={{position:"absolute",inset:-14,borderRadius:"50%",border:"1px dashed rgba(201,123,99,0.15)",animation:"spinSlowRev 22s linear infinite"}}/>
+                        <div style={{width:"100%",height:"100%",borderRadius:"50%",background:"linear-gradient(135deg,#EAD8C0,#F5E9DA)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 24px rgba(201,123,99,0.2)"}}>
+                          <span style={{fontFamily:"'Playfair Display',serif",fontSize:28,color:"#C97B63"}}>{step.icon}</span>
+                        </div>
+                      </div>
+
+                      <h3 style={{fontSize:20,fontWeight:600,color:"#3E2F2F",marginBottom:14}}>{step.title}</h3>
+                      <p style={{fontFamily:"'Poppins',sans-serif",fontSize:13.5,color:"#7A6060",lineHeight:1.8}}>{step.desc}</p>
                     </div>
-                    <h3 style={{ fontSize: 19, fontWeight: 600, color: "#3E2F2F", marginBottom: 12 }}>{step.title}</h3>
-                    <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13.5, color: "#7A6060", lineHeight: 1.75 }}>{step.desc}</p>
-                  </div>
+                  </Tilt>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <Wave color="#FAF3E8" />
+        <Wave bg="#F5E9DA" fill="#FAF3E8"/>
 
-        {/* FEATURED PRODUCTS */}
-        <section style={{ padding: "110px 28px", background: "#FAF3E8" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 52, flexWrap: "wrap", gap: 16 }} className="reveal">
+        {/* ════════ FEATURED PRODUCTS ════════ */}
+        <section style={{padding:"120px 28px",background:"#FAF3E8"}}>
+          <div style={{maxWidth:1240,margin:"0 auto"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:56,flexWrap:"wrap",gap:16}} className="reveal">
               <div>
-                <div className="badge" style={{ marginBottom: 14 }}>Handpicked</div>
-                <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 700 }}>Featured Work</h2>
-                <div style={{ width: 48, height: 3, background: "#C97B63", borderRadius: 2, marginTop: 10 }} />
+                <span className="badge" style={{marginBottom:14}}><span>✦</span>Handpicked</span>
+                <h2 style={{fontSize:"clamp(26px,4vw,44px)",fontWeight:700}}>Featured Work</h2>
+                <div style={{width:52,height:3,background:"#C97B63",borderRadius:2,marginTop:12}}/>
               </div>
-              <Link href="/diy-charts" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 500, color: "#C97B63", textDecoration: "none", fontFamily: "'Poppins',sans-serif" }}>View All <ArrowRight size={14} /></Link>
+              <MagneticWrap>
+                <Link href="/diy-charts" style={{display:"flex",alignItems:"center",gap:6,fontSize:13,fontWeight:600,color:"#C97B63",textDecoration:"none",fontFamily:"'Poppins',sans-serif",padding:"10px 20px",border:"1.5px solid rgba(201,123,99,0.3)",borderRadius:50,cursor:"none",transition:"all 0.2s"}}>
+                  View All <ArrowRight size={14}/>
+                </Link>
+              </MagneticWrap>
             </div>
-            {loadingProducts ? (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(270px,1fr))", gap: 24 }}>
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(62,47,47,0.08)" }}>
-                    <div className="skeleton" style={{ height: 220 }} />
-                    <div style={{ padding: 20, background: "#FAF3E8" }}>
-                      <div className="skeleton" style={{ height: 16, width: "70%", marginBottom: 10 }} />
-                      <div className="skeleton" style={{ height: 13, marginBottom: 16 }} />
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <div className="skeleton" style={{ height: 22, width: 60 }} />
-                        <div className="skeleton" style={{ height: 34, width: 85, borderRadius: 50 }} />
+
+            {loading ? (
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(270px,1fr))",gap:24}}>
+                {[...Array(4)].map((_,i)=>(
+                  <div key={i} style={{borderRadius:20,overflow:"hidden",border:"1px solid rgba(62,47,47,0.08)"}}>
+                    <div className="skeleton" style={{height:220}}/>
+                    <div style={{padding:20,background:"#FAF3E8"}}>
+                      <div className="skeleton" style={{height:16,width:"70%",marginBottom:10}}/>
+                      <div className="skeleton" style={{height:13,marginBottom:16}}/>
+                      <div style={{display:"flex",justifyContent:"space-between"}}>
+                        <div className="skeleton" style={{height:22,width:60}}/>
+                        <div className="skeleton" style={{height:34,width:85,borderRadius:50}}/>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-            ) : products.length > 0 ? (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(270px,1fr))", gap: 24 }}>
-                {products.map(p => <ProductCard key={p._id} product={p} />)}
+            ) : products.length>0 ? (
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(270px,1fr))",gap:24}}>
+                {products.map(p=><ProductCard key={p._id} product={p}/>)}
               </div>
             ) : (
-              <div style={{ textAlign: "center", padding: "80px 24px" }}>
-                <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 52, color: "#C97B63", marginBottom: 16, display: "inline-block", animation: "spinSlow 9s linear infinite" }}>✦</div>
-                <h3 style={{ fontSize: 22, color: "#3E2F2F", marginBottom: 8 }}>Products Coming Soon</h3>
-                <p style={{ fontFamily: "'Poppins',sans-serif", color: "#7A6060", marginBottom: 28, fontSize: 14 }}>Our catalog is being curated. Check back soon!</p>
-                <Link href="/custom-models" className="btn-primary">Start a Custom Request</Link>
+              <div style={{textAlign:"center",padding:"90px 24px"}}>
+                <div style={{display:"inline-block",fontFamily:"'Playfair Display',serif",fontSize:56,color:"#C97B63",marginBottom:18,animation:"spinSlow 10s linear infinite"}}>✦</div>
+                <h3 style={{fontSize:24,color:"#3E2F2F",marginBottom:10}}>Products Coming Soon</h3>
+                <p style={{fontFamily:"'Poppins',sans-serif",color:"#7A6060",marginBottom:30,fontSize:14}}>Our catalog is being curated. Check back soon!</p>
+                <MagneticWrap><Link href="/custom-models" className="btn-primary">Start a Custom Request</Link></MagneticWrap>
               </div>
             )}
           </div>
         </section>
 
-        {/* STATS BAND */}
-        <section style={{ background: "#C97B63", padding: "68px 28px", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", inset: 0, backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E\")", pointerEvents: "none" }} />
-          <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", justifyContent: "center", gap: "clamp(28px,6vw,80px)", flexWrap: "wrap" }} className="reveal">
-            {[
-              { to: 500, suffix: "+", label: "Projects Delivered" },
-              { to: 98, suffix: "%", label: "Happy Customers" },
-              { to: 48, suffix: "h", label: "Average Delivery" },
-            ].map(stat => (
-              <div key={stat.label} style={{ textAlign: "center" }}>
-                <p style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(34px,5vw,50px)", fontWeight: 700, color: "white" }}>
-                  <Counter to={stat.to} suffix={stat.suffix} />
+        {/* ════════ STATS BAND ════════ */}
+        <section style={{background:"linear-gradient(135deg,#C97B63,#A85C45)",padding:"80px 28px",position:"relative",overflow:"hidden"}}>
+          {/* Animated circles bg */}
+          <div style={{position:"absolute",inset:0,pointerEvents:"none"}}>
+            <div style={{position:"absolute",top:"-40%",right:"-10%",width:500,height:500,borderRadius:"50%",background:"rgba(255,255,255,0.06)",animation:"spinSlow 30s linear infinite"}}/>
+            <div style={{position:"absolute",bottom:"-50%",left:"-8%",width:400,height:400,borderRadius:"50%",background:"rgba(255,255,255,0.04)"}}/>
+          </div>
+          <div style={{maxWidth:1000,margin:"0 auto",display:"flex",justifyContent:"center",gap:"clamp(32px,7vw,90px)",flexWrap:"wrap",position:"relative",zIndex:2}} className="reveal">
+            {[{to:500,suf:"+",label:"Projects Delivered"},{to:98,suf:"%",label:"Happy Customers"},{to:48,suf:"h",label:"Average Delivery"},{to:49,suf:" ★",label:"Average Rating"}].map(s=>(
+              <div key={s.label} style={{textAlign:"center"}}>
+                <p style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(36px,5.5vw,56px)",fontWeight:700,color:"white",textShadow:"0 2px 12px rgba(0,0,0,0.1)"}}>
+                  <Counter to={s.to} suffix={s.suf}/>
                 </p>
-                <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 11, color: "rgba(255,255,255,0.75)", marginTop: 6, textTransform: "uppercase", letterSpacing: "0.12em" }}>{stat.label}</p>
+                <p style={{fontFamily:"'Poppins',sans-serif",fontSize:11,color:"rgba(255,255,255,0.7)",marginTop:7,textTransform:"uppercase",letterSpacing:"0.14em"}}>{s.label}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* TESTIMONIALS */}
-        <section style={{ padding: "110px 28px", background: "#EAD8C0", position: "relative", overflow: "hidden" }}>
-          <svg style={{ position: "absolute", bottom: 0, left: 0, opacity: 0.06, pointerEvents: "none" }} viewBox="0 0 200 200" width="200" height="200">
-            <path d="M100 20 C155 15,185 55,180 100 C175 145,140 180,100 180 C55 180,15 145,20 100 C25 50,52 25,100 20Z" fill="#C97B63" />
-          </svg>
-          <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 56 }} className="reveal">
-              <div className="badge" style={{ marginBottom: 16 }}>Kind Words</div>
-              <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 700 }}>What Our Customers Say</h2>
-              <div className="divider" />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 24 }}>
-              {testimonials.map((t, i) => (
-                <div key={i} className="reveal" style={{ animationDelay: `${i*0.12}s` }}>
-                  <TiltCard style={{ background: "#FAF3E8", border: "1px solid rgba(62,47,47,0.09)", borderRadius: 22, boxShadow: "0 2px 12px rgba(62,47,47,0.07)" }}>
-                    <div style={{ padding: "32px 28px" }}>
-                      <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 52, color: "#C97B63", lineHeight: 1, marginBottom: 14, opacity: 0.22 }}>"</div>
-                      <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13.5, color: "#3E2F2F", lineHeight: 1.8, marginBottom: 24, fontStyle: "italic" }}>{t.text}</p>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 18, borderTop: "1px solid rgba(62,47,47,0.08)" }}>
-                        <div style={{ width: 42, height: 42, borderRadius: "50%", background: "linear-gradient(135deg,#C97B63,#A85C45)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, boxShadow: "0 4px 12px rgba(201,123,99,0.3)", flexShrink: 0 }}>{t.initials}</div>
+        {/* ════════ TESTIMONIALS ════════ */}
+        <section style={{padding:"120px 28px",background:"#EAD8C0",position:"relative",overflow:"hidden"}}>
+          {/* Large decorative quote */}
+          <div style={{position:"absolute",top:20,left:"50%",transform:"translateX(-50%)",fontFamily:"'Playfair Display',serif",fontSize:280,color:"#C97B63",opacity:0.04,lineHeight:1,pointerEvents:"none",userSelect:"none"}}>"</div>
+
+          <div style={{maxWidth:1140,margin:"0 auto",position:"relative",zIndex:2}}>
+            <SectionHead badge="Kind Words" title="What Our Customers Say"/>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(290px,1fr))",gap:26}}>
+              {testimonials.map((t,i)=>(
+                <div key={i} className="reveal" style={{transitionDelay:`${i*0.14}s`}}>
+                  <Tilt intensity={7} style={{background:"#FAF3E8",border:"1px solid rgba(62,47,47,0.09)",borderRadius:24,boxShadow:"0 2px 14px rgba(62,47,47,0.07)",cursor:"none"}}>
+                    <div style={{padding:"34px 30px"}}>
+                      {/* Stars */}
+                      <div style={{display:"flex",gap:3,marginBottom:14}}>
+                        {[1,2,3,4,5].map(s=><span key={s} style={{color:"#C97B63",fontSize:14}}>★</span>)}
+                      </div>
+                      <p style={{fontFamily:"'Poppins',sans-serif",fontSize:13.5,color:"#3E2F2F",lineHeight:1.85,marginBottom:26,fontStyle:"italic"}}>{t.text}</p>
+                      <div style={{display:"flex",alignItems:"center",gap:14,paddingTop:20,borderTop:"1px solid rgba(62,47,47,0.08)"}}>
+                        <div style={{position:"relative",flexShrink:0}}>
+                          <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,#C97B63,#A85C45)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontFamily:"'Playfair Display',serif",fontWeight:700,fontSize:15,boxShadow:"0 4px 14px rgba(201,123,99,0.35)"}}>
+                            {t.initials}
+                          </div>
+                          <div style={{position:"absolute",inset:-3,borderRadius:"50%",border:"1.5px solid rgba(201,123,99,0.3)",animation:"pulseRing 2.5s ease-out infinite"}}/>
+                        </div>
                         <div>
-                          <p style={{ fontFamily: "'Poppins',sans-serif", fontWeight: 600, fontSize: 13.5, color: "#3E2F2F" }}>{t.name}</p>
-                          <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 11.5, color: "#A89080", marginTop: 2 }}>{t.role}</p>
+                          <p style={{fontFamily:"'Poppins',sans-serif",fontWeight:600,fontSize:14,color:"#3E2F2F"}}>{t.name}</p>
+                          <p style={{fontFamily:"'Poppins',sans-serif",fontSize:12,color:"#A89080",marginTop:2}}>{t.role}</p>
                         </div>
                       </div>
                     </div>
-                  </TiltCard>
+                  </Tilt>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section style={{ padding: "110px 28px", background: "#FAF3E8" }}>
-          <div className="reveal" style={{ maxWidth: 760, margin: "0 auto", textAlign: "center", padding: "80px 52px", borderRadius: 30, background: "linear-gradient(135deg,#F5E9DA,#EAD8C0)", border: "1px solid rgba(62,47,47,0.1)", boxShadow: "0 14px 52px rgba(62,47,47,0.1)", position: "relative", overflow: "hidden" }}>
-            <svg style={{ position: "absolute", top: 16, right: 16, opacity: 0.14 }} viewBox="0 0 80 80" width="80" height="80">
-              {[0,1,2,3].map(r => [0,1,2,3].map(c => <circle key={`${r}-${c}`} cx={10+c*20} cy={10+r*20} r="2" fill="#C97B63" />))}
-            </svg>
-            <svg style={{ position: "absolute", bottom: 16, left: 16, opacity: 0.14 }} viewBox="0 0 80 80" width="80" height="80">
-              {[0,1,2,3].map(r => [0,1,2,3].map(c => <circle key={`${r}-${c}`} cx={10+c*20} cy={10+r*20} r="2" fill="#C97B63" />))}
-            </svg>
-            <div style={{ display: "inline-block", fontFamily: "'Playfair Display',serif", fontSize: 44, color: "#C97B63", marginBottom: 22, opacity: 0.65, animation: "spinSlow 12s linear infinite" }}>✦</div>
-            <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 700, color: "#3E2F2F", marginBottom: 18, lineHeight: 1.25 }}>Turn Your Idea Into Something Real</h2>
-            <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 15, color: "#7A6060", lineHeight: 1.8, marginBottom: 36, maxWidth: 490, margin: "0 auto 36px" }}>
-              Whether it's a school project, a custom creation, or a 3D print — we're here to make it happen, by hand.
-            </p>
-            <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", marginBottom: 36 }}>
-              {["Free Consultation", "Fast Delivery", "Quality Guaranteed"].map(point => (
-                <div key={point} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <CheckCircle2 size={14} color="#C97B63" />
-                  <span style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13, color: "#7A6060", fontWeight: 500 }}>{point}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/custom-models" className="btn-primary">Start Your Project <ArrowRight size={15} /></Link>
-              <Link href="/diy-charts" className="btn-secondary">Browse Catalog</Link>
+        {/* ════════ CTA ════════ */}
+        <section style={{padding:"120px 28px",background:"#FAF3E8"}}>
+          <div className="reveal" style={{maxWidth:800,margin:"0 auto",textAlign:"center",padding:"90px 56px",borderRadius:32,background:"linear-gradient(135deg,#F5E9DA,#EAD8C0)",border:"1px solid rgba(62,47,47,0.1)",boxShadow:"0 20px 70px rgba(62,47,47,0.1)",position:"relative",overflow:"hidden"}}>
+            {/* Corner dots */}
+            {[[16,16],[16,"auto"],[null,16]].map(([t,b],i)=>null)}
+            <svg style={{position:"absolute",top:18,right:18,opacity:0.14}} viewBox="0 0 90 90" width="90" height="90">{[0,1,2,3].map(r=>[0,1,2,3].map(c=><circle key={`${r}-${c}`} cx={11+c*22} cy={11+r*22} r="2.5" fill="#C97B63"/>))}</svg>
+            <svg style={{position:"absolute",bottom:18,left:18,opacity:0.14}} viewBox="0 0 90 90" width="90" height="90">{[0,1,2,3].map(r=>[0,1,2,3].map(c=><circle key={`${r}-${c}`} cx={11+c*22} cy={11+r*22} r="2.5" fill="#C97B63"/>))}</svg>
+            {/* Spinning rings */}
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:560,height:560,borderRadius:"50%",border:"1px dashed rgba(201,123,99,0.1)",animation:"spinSlow 40s linear infinite",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:420,height:420,borderRadius:"50%",border:"1px dashed rgba(201,123,99,0.08)",animation:"spinSlowRev 28s linear infinite",pointerEvents:"none"}}/>
+
+            <div style={{position:"relative",zIndex:2}}>
+              <div style={{display:"inline-block",fontFamily:"'Playfair Display',serif",fontSize:50,color:"#C97B63",marginBottom:24,opacity:0.65,animation:"spinSlow 14s linear infinite"}}>✦</div>
+              <h2 style={{fontSize:"clamp(28px,4.5vw,46px)",fontWeight:700,color:"#3E2F2F",marginBottom:20,lineHeight:1.2}}>
+                Turn Your Idea Into<br/>Something Real
+              </h2>
+              <p style={{fontFamily:"'Poppins',sans-serif",fontSize:15,color:"#7A6060",lineHeight:1.85,marginBottom:40,maxWidth:500,margin:"0 auto 40px"}}>
+                Whether it's a school project, a custom creation, or a 3D print — we're here to make it happen, by hand.
+              </p>
+              <div style={{display:"flex",gap:20,justifyContent:"center",flexWrap:"wrap",marginBottom:36}}>
+                {["Free Consultation","Fast Delivery","Quality Guaranteed"].map(pt=>(
+                  <div key={pt} style={{display:"flex",alignItems:"center",gap:6}}>
+                    <CheckCircle2 size={14} color="#C97B63"/>
+                    <span style={{fontFamily:"'Poppins',sans-serif",fontSize:13,color:"#7A6060",fontWeight:500}}>{pt}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap"}}>
+                <MagneticWrap><Link href="/custom-models" className="btn-primary" style={{fontSize:15,padding:"15px 34px"}}>Start Your Project <ArrowRight size={16}/></Link></MagneticWrap>
+                <MagneticWrap><Link href="/diy-charts" className="btn-secondary" style={{fontSize:15,padding:"14px 34px"}}>Browse Catalog</Link></MagneticWrap>
+              </div>
             </div>
           </div>
         </section>
 
         <style>{`
-          @keyframes catUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
-          @keyframes spinSlow { to { transform: rotate(360deg); } }
-          @keyframes marquee { to { transform: translateX(-33.333%); } }
-          @keyframes fa { 0%,100% { transform:translateY(0) rotate(-3deg); } 50% { transform:translateY(-18px) rotate(3deg); } }
-          @keyframes fb { 0%,100% { transform:translateY(0) rotate(5deg); } 50% { transform:translateY(-22px) rotate(-5deg); } }
-          @keyframes fc { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-13px) rotate(7deg); } }
-          @keyframes scrollPulse { 0%,100% { opacity:1; transform:scaleY(1); } 50% { opacity:0.4; transform:scaleY(0.6); } }
-
-          .f-a { animation: fa 5s ease-in-out infinite; }
-          .f-b { animation: fb 6.5s ease-in-out infinite; }
-          .f-c { animation: fc 4.5s ease-in-out infinite; }
-          .marquee-inner { animation: marquee 20s linear infinite; }
-          .marquee-inner:hover { animation-play-state: paused; }
-          .scroll-cue { animation: scrollPulse 2s ease-in-out infinite; transform-origin: top; }
-
-          .btn-primary { transition: all 0.2s ease !important; }
-          .btn-primary:hover { transform: translateY(-3px) scale(1.04) !important; box-shadow: 0 10px 30px rgba(201,123,99,0.45) !important; }
-          .btn-secondary:hover { transform: translateY(-2px) !important; }
+          @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+          @keyframes cardUp { from{opacity:0;transform:translateY(34px)} to{opacity:1;transform:translateY(0)} }
+          @keyframes tagFly { from{opacity:0;transform:translateY(18px) scale(0.9)} to{opacity:1;transform:translateY(0) scale(1)} }
+          .btn-primary, .btn-secondary { cursor: none !important; }
+          a, button { cursor: none !important; }
+          * { cursor: none !important; }
         `}</style>
       </div>
     </>
