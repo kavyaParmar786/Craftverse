@@ -36,11 +36,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 borderRadius: "14px",
                 background: "rgba(255,255,255,0.95)",
                 backdropFilter: "blur(12px)",
-                border: "1px solid rgba(139,92,246,0.15)",
-                color: "#1a1a2e",
-                boxShadow: "0 8px 32px rgba(139,92,246,0.15)",
+                border: "1px solid rgba(201,123,99,0.15)",
+                color: "#2C1A0E",
+                boxShadow: "0 8px 32px rgba(201,123,99,0.15)",
               },
-              success: { iconTheme: { primary: "#8b5cf6", secondary: "#fff" } },
+              success: { iconTheme: { primary: "#C97B63", secondary: "#fff" } },
             }}
           />
         </Providers>

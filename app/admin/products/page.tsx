@@ -1,30 +1,42 @@
 "use client";
-export const dynamic = 'force-dynamic';
 import { useEffect, useState } from "react";
 import { useAuth } from "@/store/authStore";
 import { Plus, Pencil, Trash2, X, Check, Package } from "lucide-react";
 import toast from "react-hot-toast";
 import { Product } from "@/types";
+import ImageUpload from "@/components/ui/ImageUpload";
 
-type FormState = { name: string; price: string; category: string; description: string; stock: string; featured: boolean; image: string; };
-const emptyForm: FormState = { name: "", price: "", category: "charts", description: "", stock: "10", featured: false, image: "" };
-const LBL = ({ children }: { children: string }) => <label style={{ display: "block", fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: 600, color: "#3E2F2F", marginBottom: 5, letterSpacing: "0.04em", textTransform: "uppercase" as const }}>{children}</label>;
-const TH = ({ children }: { children: string }) => <th style={{ padding: "10px 18px", textAlign: "left", fontFamily: "'Poppins',sans-serif", fontSize: 11, fontWeight: 600, color: "#7A6060", textTransform: "uppercase" as const, letterSpacing: "0.06em", whiteSpace: "nowrap" as const }}>{children}</th>;
+type FormState = {
+  name: string; price: string; category: string;
+  description: string; stock: string; featured: boolean; image: string;
+};
+const emptyForm: FormState = {
+  name:"", price:"", category:"charts", description:"", stock:"10", featured:false, image:""
+};
 
-function ProductModal({ product, onClose, onSave, token }: { product: Product | null; onClose: () => void; onSave: () => void; token: string | null; }) {
+function ProductModal({ product, onClose, onSave, token }: {
+  product: Product | null; onClose: ()=>void; onSave: ()=>void; token: string|null;
+}) {
   const [form, setForm] = useState<FormState>(
-    product ? { name: product.name, price: String(product.price), category: product.category, description: product.description, stock: String(product.stock), featured: product.featured, image: product.image } : { ...emptyForm }
+    product
+      ? { name:product.name, price:String(product.price), category:product.category,
+          description:product.description, stock:String(product.stock),
+          featured:product.featured, image:product.image }
+      : { ...emptyForm }
   );
   const [loading, setLoading] = useState(false);
-  const set = (k: keyof FormState, v: string | boolean) => setForm(f => ({ ...f, [k]: v }));
+  const set = (key: keyof FormState, val: string|boolean) => setForm(f=>({...f,[key]:val}));
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true);
+    e.preventDefault();
+    setLoading(true);
     try {
-      const res = await fetch(product?._id ? `/api/products/${product._id}` : "/api/products", {
-        method: product?._id ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ ...form, price: Number(form.price), stock: Number(form.stock) }),
+      const url = product?._id ? `/api/products/${product._id}` : "/api/products";
+      const method = product?._id ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
+        body: JSON.stringify({ ...form, price:Number(form.price), stock:Number(form.stock) }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
       toast.success(product?._id ? "Product updated!" : "Product created!");
@@ -34,33 +46,68 @@ function ProductModal({ product, onClose, onSave, token }: { product: Product | 
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(62,47,47,0.3)", backdropFilter: "blur(4px)", padding: 24 }}>
-      <div style={{ width: "100%", maxWidth: 520, background: "#FAF3E8", borderRadius: 20, padding: "32px", border: "1px solid rgba(62,47,47,0.10)", boxShadow: "0 16px 48px rgba(62,47,47,0.15)", maxHeight: "90vh", overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 20, fontWeight: 700, color: "#3E2F2F", margin: 0 }}>{product?._id ? "Edit Product" : "Add Product"}</h2>
-          <button onClick={onClose} style={{ padding: 7, borderRadius: 8, border: "none", background: "rgba(180,60,60,0.08)", cursor: "pointer" }}><X size={15} color="#B43C3C" /></button>
+    <div style={{ position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.3)",backdropFilter:"blur(4px)",padding:24 }}>
+      <div className="glass-card" style={{ width:"100%",maxWidth:560,borderRadius:24,padding:"36px",maxHeight:"92vh",overflowY:"auto" }}>
+        <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28 }}>
+          <h2 style={{ fontFamily:"'Playfair Display',serif",fontSize:22,fontWeight:700,color:"#2C1A0E",margin:0 }}>
+            {product?._id ? "Edit Product" : "Add Product"}
+          </h2>
+          <button onClick={onClose} style={{ padding:8,borderRadius:10,border:"none",background:"rgba(239,68,68,0.08)",cursor:"pointer" }}><X size={16} color="#ef4444"/></button>
         </div>
-        <form onSubmit={handleSubmit} style={{ display: "grid", gap: 14 }}>
-          <div><LBL>Product Name *</LBL><input className="craft-input" required value={form.name} onChange={e => set("name", e.target.value)} placeholder="e.g. Solar System Model" /></div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            <div><LBL>Price (₹) *</LBL><input className="craft-input" required type="number" min="0" value={form.price} onChange={e => set("price", e.target.value)} placeholder="299" /></div>
-            <div><LBL>Stock</LBL><input className="craft-input" type="number" min="0" value={form.stock} onChange={e => set("stock", e.target.value)} placeholder="10" /></div>
+
+        <form onSubmit={handleSubmit} style={{ display:"grid",gap:16 }}>
+          {/* Image upload — drag & drop */}
+          <ImageUpload
+            label="Product Image"
+            value={form.image}
+            onChange={url => set("image", url)}
+            hint="Drag & drop or click to upload. Shown on product cards."
+          />
+
+          <div>
+            <label style={{ display:"block",fontSize:13,fontWeight:600,color:"#5C3D2E",marginBottom:6 }}>Product Name *</label>
+            <input className="craft-input" required value={form.name} onChange={e=>set("name",e.target.value)} placeholder="e.g. Solar System Model"/>
           </div>
-          <div><LBL>Category *</LBL>
-            <select className="craft-input" value={form.category} onChange={e => set("category", e.target.value)}>
-              <option value="charts">DIY Charts</option><option value="models">DIY Models</option><option value="3d-printing">3D Printing</option><option value="clothes">Custom Clothes</option>
+
+          <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:14 }}>
+            <div>
+              <label style={{ display:"block",fontSize:13,fontWeight:600,color:"#5C3D2E",marginBottom:6 }}>Price (₹) *</label>
+              <input className="craft-input" required type="number" min="0" value={form.price} onChange={e=>set("price",e.target.value)} placeholder="299"/>
+            </div>
+            <div>
+              <label style={{ display:"block",fontSize:13,fontWeight:600,color:"#5C3D2E",marginBottom:6 }}>Stock</label>
+              <input className="craft-input" type="number" min="0" value={form.stock} onChange={e=>set("stock",e.target.value)} placeholder="10"/>
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display:"block",fontSize:13,fontWeight:600,color:"#5C3D2E",marginBottom:6 }}>Category *</label>
+            <select className="craft-input" value={form.category} onChange={e=>set("category",e.target.value)}>
+              <option value="charts">DIY Charts</option>
+              <option value="models">DIY Models</option>
+              <option value="3d-printing">3D Printing</option>
+              <option value="clothes">Custom Clothes</option>
             </select>
           </div>
-          <div><LBL>Image URL</LBL><input className="craft-input" value={form.image} onChange={e => set("image", e.target.value)} placeholder="https://..." /></div>
-          <div><LBL>Description *</LBL><textarea className="craft-input" required rows={3} style={{ resize: "vertical" }} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Describe the product..." /></div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <input type="checkbox" id="featured" checked={form.featured} onChange={e => set("featured", e.target.checked)} style={{ width: 16, height: 16, accentColor: "#C97B63" }} />
-            <label htmlFor="featured" style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13, color: "#7A6060", cursor: "pointer" }}>Mark as Featured</label>
+
+          <div>
+            <label style={{ display:"block",fontSize:13,fontWeight:600,color:"#5C3D2E",marginBottom:6 }}>Description *</label>
+            <textarea className="craft-input" required rows={3} style={{ resize:"vertical" }}
+              value={form.description} onChange={e=>set("description",e.target.value)}
+              placeholder="Describe the product..."/>
           </div>
-          <div style={{ display: "flex", gap: 12, paddingTop: 4 }}>
-            <button type="button" onClick={onClose} className="btn-secondary" style={{ flex: 1, justifyContent: "center" }}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={loading} style={{ flex: 1, justifyContent: "center", opacity: loading ? 0.7 : 1 }}>
-              <Check size={14} />{loading ? "Saving..." : "Save Product"}
+
+          <div style={{ display:"flex",alignItems:"center",gap:10 }}>
+            <input type="checkbox" id="featured" checked={form.featured}
+              onChange={e=>set("featured",e.target.checked)}
+              style={{ width:16,height:16,accentColor:"#C97B63" }}/>
+            <label htmlFor="featured" style={{ fontSize:14,color:"#5C3D2E",cursor:"pointer" }}>Mark as Featured</label>
+          </div>
+
+          <div style={{ display:"flex",gap:12,paddingTop:8 }}>
+            <button type="button" onClick={onClose} className="btn-secondary" style={{ flex:1,justifyContent:"center" }}>Cancel</button>
+            <button type="submit" className="btn-primary" disabled={loading} style={{ flex:1,justifyContent:"center",opacity:loading?0.7:1 }}>
+              <Check size={15}/> {loading?"Saving...":"Save Product"}
             </button>
           </div>
         </form>
@@ -73,66 +120,83 @@ export default function AdminProductsPage() {
   const { token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ open: boolean; product: Product | null }>({ open: false, product: null });
+  const [modal, setModal] = useState<{open:boolean;product:Product|null}>({open:false,product:null});
 
   const fetchProducts = () => {
     setLoading(true);
-    fetch("/api/products", { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json()).then(d => { setProducts(d.products || []); setLoading(false); }).catch(() => setLoading(false));
+    fetch("/api/products",{headers:{Authorization:`Bearer ${token}`}})
+      .then(r=>r.json()).then(d=>{setProducts(d.products||[]);setLoading(false);}).catch(()=>setLoading(false));
   };
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(()=>{fetchProducts();},[]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this product?")) return;
-    try { await fetch(`/api/products/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }); toast.success("Product deleted"); fetchProducts(); }
-    catch { toast.error("Delete failed"); }
+  const handleDelete = async(id:string)=>{
+    if(!confirm("Delete this product?")) return;
+    try {
+      await fetch(`/api/products/${id}`,{method:"DELETE",headers:{Authorization:`Bearer ${token}`}});
+      toast.success("Product deleted"); fetchProducts();
+    } catch { toast.error("Delete failed"); }
   };
 
-  const catLabel: Record<string, string> = { charts: "DIY Charts", models: "DIY Models", "3d-printing": "3D Printing", clothes: "Clothes" };
+  const catLabel:Record<string,string>={charts:"DIY Charts",models:"DIY Models","3d-printing":"3D Printing",clothes:"Clothes"};
+  const catColor:Record<string,string>={charts:"#C97B63",models:"#D4906E","3d-printing":"#C97B63",clothes:"#C97B63"};
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+      <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:32 }}>
         <div>
-          <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 30, fontWeight: 700, color: "#3E2F2F", marginBottom: 4 }}>Products</h1>
-          <p style={{ fontFamily: "'Poppins',sans-serif", color: "#7A6060", fontSize: 13 }}>{products.length} products in catalog</p>
+          <h1 style={{ fontFamily:"'Playfair Display',serif",fontSize:32,fontWeight:700,color:"#2C1A0E",marginBottom:4 }}>Products</h1>
+          <p style={{ color:"#8B6F5E",fontSize:14 }}>{products.length} products in catalog</p>
         </div>
-        <button onClick={() => setModal({ open: true, product: null })} className="btn-primary"><Plus size={15} /> Add Product</button>
+        <button onClick={()=>setModal({open:true,product:null})} className="btn-primary"><Plus size={16}/> Add Product</button>
       </div>
 
       {loading ? (
-        <div style={{ display: "grid", gap: 10 }}>{[...Array(5)].map((_, i) => <div key={i} className="skeleton" style={{ height: 60, borderRadius: 12 }} />)}</div>
-      ) : products.length === 0 ? (
-        <div style={{ background: "#FAF3E8", border: "1px solid rgba(62,47,47,0.09)", borderRadius: 18, padding: "60px 24px", textAlign: "center" }}>
-          <Package size={40} color="#EAD8C0" style={{ marginBottom: 12 }} />
-          <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 19, color: "#3E2F2F", marginBottom: 6 }}>No Products Yet</h3>
-          <p style={{ fontFamily: "'Poppins',sans-serif", color: "#A89080", marginBottom: 18, fontSize: 13 }}>Add your first product to get started.</p>
-          <button onClick={() => setModal({ open: true, product: null })} className="btn-primary"><Plus size={14} /> Add Product</button>
+        <div style={{ display:"grid",gap:12 }}>{[...Array(5)].map((_,i)=><div key={i} className="skeleton" style={{ height:64,borderRadius:14 }}/>)}</div>
+      ) : products.length===0 ? (
+        <div className="glass-card" style={{ padding:"72px 24px",borderRadius:22,textAlign:"center" }}>
+          <Package size={48} color="#e5e7eb" style={{ marginBottom:16 }}/>
+          <h3 style={{ fontFamily:"'Playfair Display',serif",fontSize:20,color:"#2C1A0E",marginBottom:8 }}>No Products Yet</h3>
+          <p style={{ color:"#B89080",marginBottom:20 }}>Add your first product to get started.</p>
+          <button onClick={()=>setModal({open:true,product:null})} className="btn-primary"><Plus size={15}/> Add Product</button>
         </div>
       ) : (
-        <div style={{ background: "#FAF3E8", border: "1px solid rgba(62,47,47,0.09)", borderRadius: 18, overflow: "hidden" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead><tr style={{ background: "#EAD8C0" }}><TH>Product</TH><TH>Category</TH><TH>Price</TH><TH>Stock</TH><TH>Featured</TH><TH>Actions</TH></tr></thead>
+        <div className="glass-card" style={{ borderRadius:22,overflow:"hidden" }}>
+          <div style={{ overflowX:"auto" }}>
+            <table style={{ width:"100%",borderCollapse:"collapse" }}>
+              <thead>
+                <tr style={{ background:"rgba(201,123,99,0.04)" }}>
+                  {["Image","Product","Category","Price","Stock","Featured","Actions"].map(h=>(
+                    <th key={h} style={{ padding:"14px 16px",textAlign:"left",fontSize:12,fontWeight:600,color:"#8B6F5E",textTransform:"uppercase",letterSpacing:"0.05em",whiteSpace:"nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
               <tbody>
-                {products.map((p, i) => (
-                  <tr key={p._id} style={{ borderTop: "1px solid rgba(62,47,47,0.06)", background: i % 2 === 0 ? "transparent" : "rgba(234,216,192,0.18)" }}>
-                    <td style={{ padding: "12px 18px" }}>
-                      <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 13, fontWeight: 600, color: "#3E2F2F", margin: 0 }}>{p.name}</p>
-                      <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 11, color: "#A89080", margin: "2px 0 0", maxWidth: 220, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.description}</p>
+                {products.map((p,i)=>(
+                  <tr key={p._id} style={{ borderTop:"1px solid rgba(201,123,99,0.06)",background:i%2===0?"transparent":"rgba(253,246,238,0.3)" }}>
+                    <td style={{ padding:"12px 16px" }}>
+                      <div style={{ width:44,height:44,borderRadius:10,overflow:"hidden",background:"linear-gradient(135deg,#EDD9C5,#EDD9C5)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20 }}>
+                        {p.image
+                          ? <img src={p.image} alt={p.name} style={{ width:"100%",height:"100%",objectFit:"cover" }}/>
+                          : (p.category==="charts"?"📊":p.category==="models"?"🏛️":p.category==="3d-printing"?"🖨️":"👕")
+                        }
+                      </div>
                     </td>
-                    <td style={{ padding: "12px 18px" }}>
-                      <span style={{ fontFamily: "'Poppins',sans-serif", padding: "3px 10px", borderRadius: 50, fontSize: 10, fontWeight: 600, background: "#EAD8C0", color: "#7A6060", letterSpacing: "0.06em", textTransform: "uppercase" }}>{catLabel[p.category] || p.category}</span>
+                    <td style={{ padding:"12px 16px" }}>
+                      <p style={{ fontSize:14,fontWeight:600,color:"#2C1A0E",margin:0 }}>{p.name}</p>
+                      <p style={{ fontSize:12,color:"#B89080",margin:"2px 0 0",maxWidth:200,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>{p.description}</p>
                     </td>
-                    <td style={{ padding: "12px 18px", fontFamily: "'Playfair Display',serif", fontSize: 15, fontWeight: 700, color: "#C97B63" }}>₹{p.price.toLocaleString("en-IN")}</td>
-                    <td style={{ padding: "12px 18px", fontFamily: "'Poppins',sans-serif", fontSize: 13, color: p.stock < 5 ? "#B43C3C" : "#3E2F2F", fontWeight: p.stock < 5 ? 700 : 400 }}>{p.stock}</td>
-                    <td style={{ padding: "12px 18px" }}>
-                      {p.featured ? <span style={{ fontFamily: "'Poppins',sans-serif", padding: "3px 10px", borderRadius: 50, background: "rgba(201,123,99,0.12)", color: "#C97B63", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em" }}>✦ YES</span> : <span style={{ color: "#EAD8C0", fontSize: 13 }}>—</span>}
+                    <td style={{ padding:"12px 16px" }}>
+                      <span style={{ padding:"4px 10px",borderRadius:8,fontSize:12,fontWeight:600,background:`${catColor[p.category]}15`,color:catColor[p.category] }}>{catLabel[p.category]}</span>
                     </td>
-                    <td style={{ padding: "12px 18px" }}>
-                      <div style={{ display: "flex", gap: 7 }}>
-                        <button onClick={() => setModal({ open: true, product: p })} style={{ padding: "6px 9px", borderRadius: 8, border: "none", background: "#EAD8C0", cursor: "pointer", color: "#7A6060" }}><Pencil size={13} /></button>
-                        <button onClick={() => handleDelete(p._id)} style={{ padding: "6px 9px", borderRadius: 8, border: "none", background: "rgba(180,60,60,0.08)", cursor: "pointer", color: "#B43C3C" }}><Trash2 size={13} /></button>
+                    <td style={{ padding:"12px 16px",fontSize:15,fontWeight:700,color:"#A85E48" }}>₹{p.price.toLocaleString("en-IN")}</td>
+                    <td style={{ padding:"12px 16px",fontSize:14,color:p.stock<5?"#ef4444":"#5C3D2E",fontWeight:p.stock<5?700:400 }}>{p.stock}</td>
+                    <td style={{ padding:"12px 16px" }}>
+                      {p.featured?<span style={{ padding:"3px 10px",borderRadius:6,background:"rgba(201,123,99,0.1)",color:"#A85E48",fontSize:12,fontWeight:600 }}>★ Yes</span>:<span style={{ color:"#DFC4A8" }}>—</span>}
+                    </td>
+                    <td style={{ padding:"12px 16px" }}>
+                      <div style={{ display:"flex",gap:8 }}>
+                        <button onClick={()=>setModal({open:true,product:p})} style={{ padding:"6px 10px",borderRadius:8,border:"none",background:"rgba(201,123,99,0.08)",cursor:"pointer",color:"#A85E48" }}><Pencil size={14}/></button>
+                        <button onClick={()=>handleDelete(p._id)} style={{ padding:"6px 10px",borderRadius:8,border:"none",background:"rgba(239,68,68,0.08)",cursor:"pointer",color:"#ef4444" }}><Trash2 size={14}/></button>
                       </div>
                     </td>
                   </tr>
@@ -142,7 +206,7 @@ export default function AdminProductsPage() {
           </div>
         </div>
       )}
-      {modal.open && <ProductModal product={modal.product} token={token} onClose={() => setModal({ open: false, product: null })} onSave={() => { setModal({ open: false, product: null }); fetchProducts(); }} />}
+      {modal.open&&<ProductModal product={modal.product} token={token} onClose={()=>setModal({open:false,product:null})} onSave={()=>{setModal({open:false,product:null});fetchProducts();}}/>}
     </div>
   );
 }

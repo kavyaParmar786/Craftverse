@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 import { Product } from "@/types";
@@ -32,16 +32,22 @@ export default function ProductListingPage({ category, title, subtitle, emoji, a
 
   return (
     <div style={{ minHeight: "100vh", background: "#F5E9DA" }}>
-      {/* Hero */}
-      <div style={{ background: "#EAD8C0", borderBottom: "1px solid rgba(62,47,47,0.10)", padding: "60px 24px 48px" }}>
+      {/* Hero banner */}
+      <div style={{
+        background: `linear-gradient(135deg, ${accentColor}18 0%, ${accentColor}08 100%)`,
+        borderBottom: `1px solid ${accentColor}20`,
+        padding: "60px 24px 48px",
+      }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="badge" style={{ marginBottom: 16 }}>{emoji} {category.charAt(0).toUpperCase() + category.slice(1)}</div>
-          <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(30px,5vw,50px)", fontWeight: 700, color: "#3E2F2F", marginBottom: 10 }}>{title}</h1>
-          <div style={{ width: 48, height: 3, background: "#C97B63", borderRadius: 2, marginBottom: 16 }} />
-          <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 15, color: "#7A6060", maxWidth: 520, lineHeight: 1.7 }}>{subtitle}</p>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>{emoji}</div>
+          <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(32px,5vw,52px)", fontWeight: 700, color: "#2C1A0E", marginBottom: 12 }}>
+            {title}
+          </h1>
+          <p style={{ fontSize: 17, color: "#8B6F5E", maxWidth: 540, lineHeight: 1.6 }}>{subtitle}</p>
+
           {/* Search */}
-          <div style={{ marginTop: 28, position: "relative", maxWidth: 400 }}>
-            <Search size={15} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#A89080" }} />
+          <div style={{ marginTop: 32, position: "relative", maxWidth: 440 }}>
+            <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#B89080" }} />
             <input
               className="craft-input"
               placeholder="Search products..."
@@ -53,13 +59,13 @@ export default function ProductListingPage({ category, title, subtitle, emoji, a
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Products grid */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 24px" }}>
         {loading ? (
           <ProductGridSkeleton count={6} />
         ) : filtered.length > 0 ? (
           <>
-            <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 12, color: "#A89080", marginBottom: 24, letterSpacing: "0.04em" }}>
+            <p style={{ fontSize: 13, color: "#B89080", marginBottom: 24 }}>
               {filtered.length} product{filtered.length !== 1 ? "s" : ""} found
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
@@ -68,14 +74,16 @@ export default function ProductListingPage({ category, title, subtitle, emoji, a
           </>
         ) : (
           <div style={{ textAlign: "center", padding: "80px 24px" }}>
-            <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 48, color: "#C97B63", opacity: 0.3, marginBottom: 16 }}>✦</div>
-            <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, color: "#3E2F2F", marginBottom: 8 }}>
+            <div style={{ fontSize: 64, marginBottom: 16 }}>{emoji}</div>
+            <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, color: "#2C1A0E", marginBottom: 8 }}>
               {search ? "No results found" : "Coming Soon!"}
             </h3>
-            <p style={{ fontFamily: "'Poppins',sans-serif", color: "#7A6060", fontSize: 13 }}>
+            <p style={{ color: "#8B6F5E" }}>
               {search ? `No products match "${search}"` : "We're adding products to this category. Check back soon!"}
             </p>
-            {search && <button onClick={() => setSearch("")} className="btn-secondary" style={{ marginTop: 16 }}>Clear Search</button>}
+            {search && (
+              <button onClick={() => setSearch("")} className="btn-secondary" style={{ marginTop: 16 }}>Clear Search</button>
+            )}
           </div>
         )}
       </div>
