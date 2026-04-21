@@ -107,3 +107,157 @@ h1, h2, h3, h4 { font-family: var(--font-serif); color: var(--text); line-height
   font-family: var(--font-sans); font-size: 11px; font-weight: 600;
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
 }
+
+/* ════════════════════════════════════════════════════════════
+   GLASSMORPHISM
+════════════════════════════════════════════════════════════ */
+.glass {
+  background: rgba(250,243,232,0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(201,123,99,0.18);
+  box-shadow: 0 8px 32px rgba(62,47,47,0.10);
+}
+.glass-dark {
+  background: rgba(62,47,47,0.45);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(201,123,99,0.25);
+  box-shadow: 0 8px 32px rgba(62,47,47,0.20);
+}
+.glass-card {
+  background: rgba(250,243,232,0.60);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(201,123,99,0.15);
+  box-shadow: 0 4px 24px rgba(62,47,47,0.08);
+  border-radius: var(--radius-lg);
+  transition: all 0.32s cubic-bezier(0.34,1.56,0.64,1);
+}
+.glass-card:hover {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 16px 48px rgba(62,47,47,0.14),
+              0 0 0 1px rgba(201,123,99,0.22),
+              inset 0 1px 0 rgba(255,255,255,0.5);
+  background: rgba(250,243,232,0.78);
+}
+
+/* ════════════════════════════════════════════════════════════
+   UNIVERSAL CARD HOVER SYSTEM
+   Every card variant gets a rich hover — lift + glow + border
+════════════════════════════════════════════════════════════ */
+
+/* paper-card (used in homepage sections) */
+.paper-card {
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.32s ease,
+              border-color 0.2s ease,
+              background 0.2s ease !important;
+}
+.paper-card:hover {
+  transform: translateY(-7px) scale(1.018) !important;
+  box-shadow: 0 20px 56px rgba(62,47,47,0.13),
+              0 0 0 1.5px rgba(201,123,99,0.25),
+              inset 0 1px 0 rgba(255,255,255,0.6) !important;
+  background: #FFFAF2 !important;
+}
+
+/* product-card */
+.product-card {
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.32s ease !important;
+}
+.product-card:hover {
+  transform: translateY(-8px) scale(1.02) !important;
+  box-shadow: 0 24px 60px rgba(62,47,47,0.14),
+              0 0 0 1.5px rgba(201,123,99,0.2) !important;
+}
+
+/* Category cards, step cards, news cards — anything with .cv-card */
+.cv-card {
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.32s ease,
+              border-color 0.25s ease;
+}
+.cv-card:hover {
+  transform: translateY(-7px) scale(1.016);
+  box-shadow: 0 18px 52px rgba(62,47,47,0.13),
+              0 0 0 1.5px rgba(201,123,99,0.22);
+}
+
+/* Admin table rows */
+.admin-row {
+  transition: background 0.15s ease;
+}
+.admin-row:hover {
+  background: rgba(201,123,99,0.05) !important;
+}
+
+/* Stat cards */
+.stat-card {
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.28s ease;
+}
+.stat-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 14px 40px rgba(62,47,47,0.12),
+              0 0 0 1px rgba(201,123,99,0.18);
+}
+
+/* Testimonial cards */
+.testimonial-card {
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.32s ease,
+              background 0.2s ease;
+}
+.testimonial-card:hover {
+  transform: translateY(-6px) scale(1.012);
+  box-shadow: 0 20px 52px rgba(62,47,47,0.12),
+              0 0 0 1.5px rgba(201,123,99,0.2);
+  background: #FFFAF2 !important;
+}
+
+/* Nav link hover */
+.nav-link:hover { letter-spacing: 0.01em; }
+
+/* Button pulse on hover */
+.btn-primary:active  { transform: scale(0.97); }
+.btn-secondary:active { transform: scale(0.97); }
+
+/* Link cards */
+.link-card {
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.28s ease,
+              color 0.15s ease;
+}
+.link-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px rgba(62,47,47,0.10);
+  color: var(--accent) !important;
+}
+
+/* Image cards */
+.img-card {
+  overflow: hidden;
+}
+.img-card img {
+  transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.img-card:hover img {
+  transform: scale(1.06);
+}
+
+/* Scroll reveal enhanced */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1),
+              transform 0.65s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* Staggered reveal delays */
+.reveal-d1 { transition-delay: 0.1s; }
+.reveal-d2 { transition-delay: 0.2s; }
+.reveal-d3 { transition-delay: 0.3s; }
+.reveal-d4 { transition-delay: 0.4s; }

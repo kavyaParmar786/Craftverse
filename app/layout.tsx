@@ -3,6 +3,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import Loader from "@/components/ui/Loader";
 import Providers from "@/components/ui/Providers";
+import CursorGlow from "@/components/ui/CursorGlow";
 
 export const metadata: Metadata = {
   title: "Craft Verse – Build. Create. Explore.",
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>
+          <CursorGlow />
           <Loader />
           {children}
           <Toaster
