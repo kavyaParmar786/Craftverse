@@ -14,20 +14,20 @@ export async function POST(req: NextRequest) {
     if (!allowed.includes(file.type))
       return NextResponse.json({ error: "Only JPEG/PNG/WEBP/GIF allowed" }, { status: 400 });
     if (file.size > 5 * 1024 * 1024)
-      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
+      return NextResponse.json({ error: "Max file size is 5MB" }, { status: 400 });
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const apiKey    = process.env.CLOUDINARY_API_KEY;
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-    // No Cloudinary? Return base64 (works immediately, no setup)
+    // Without Cloudinary → base64 fallback (works immediately)
     if (!cloudName || !apiKey || !apiSecret) {
-      const bytes = await file.arrayBuffer();
+      const bytes  = await file.arrayBuffer();
       const base64 = Buffer.from(bytes).toString("base64");
       return NextResponse.json({ url: `data:${file.type};base64,${base64}`, source: "base64" });
     }
 
-    // Upload to Cloudinary
+    // With Cloudinary → permanent CDN URL
     const timestamp = Math.floor(Date.now() / 1000);
     const { createHash } = await import("crypto");
     const signature = createHash("sha1")
@@ -41,9 +41,7 @@ export async function POST(req: NextRequest) {
     uploadForm.append("signature", signature);
     uploadForm.append("folder", "craftverse");
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: "POST", body: uploadForm,
-    });
+    const res  = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: "POST", body: uploadForm });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error?.message || "Cloudinary upload failed");
 

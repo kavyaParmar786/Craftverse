@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { useState } from "react";
 import Link from "next/link";
 import { Printer, CheckCircle2, FileBox } from "lucide-react";
+import ImageUpload from "@/components/ui/ImageUpload";
 import { useAuth } from "@/store/authStore";
 import toast from "react-hot-toast";
 
@@ -17,7 +18,7 @@ const labelStyle = { display: "block" as const, fontFamily: "'Poppins',sans-seri
 
 export default function PrintingPage() {
   const { user, token } = useAuth();
-  const [form, setForm] = useState({ title: "", description: "", material: "PLA", color: "White", budget: "", phone: "", email: user?.email || "" });
+  const [form, setForm] = useState({ title: "", description: "", material: "PLA", color: "White", budget: "", phone: "", email: user?.email || "", fileUrl: "" });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 

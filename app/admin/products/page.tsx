@@ -3,9 +3,9 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState } from "react";
 import { useAuth } from "@/store/authStore";
 import { Plus, Pencil, Trash2, X, Check, Package } from "lucide-react";
+import ImageUpload from "@/components/ui/ImageUpload";
 import toast from "react-hot-toast";
 import { Product } from "@/types";
-import ImageUploader from "@/components/ui/ImageUploader";
 
 type FormState = { name: string; price: string; category: string; description: string; stock: string; featured: boolean; image: string; };
 const emptyForm: FormState = { name: "", price: "", category: "charts", description: "", stock: "10", featured: false, image: "" };
@@ -52,7 +52,7 @@ function ProductModal({ product, onClose, onSave, token }: { product: Product | 
               <option value="charts">DIY Charts</option><option value="models">DIY Models</option><option value="3d-printing">3D Printing</option><option value="clothes">Custom Clothes</option>
             </select>
           </div>
-          <ImageUploader label="Product Image" value={form.image} onChange={url => set("image", url)} />
+          <ImageUpload label="Product Image" value={form.image} onChange={url => set("image", url)} hint="Drag & drop or click — shown on product cards." />
           <div><LBL>Description *</LBL><textarea className="craft-input" required rows={3} style={{ resize: "vertical" }} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Describe the product..." /></div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input type="checkbox" id="featured" checked={form.featured} onChange={e => set("featured", e.target.checked)} style={{ width: 16, height: 16, accentColor: "#C97B63" }} />

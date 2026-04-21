@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, ArrowRight } from "lucide-react";
+import ImageUpload from "@/components/ui/ImageUpload";
 import { useAuth } from "@/store/authStore";
 import toast from "react-hot-toast";
 
@@ -10,7 +11,7 @@ const labelStyle = { display: "block" as const, fontFamily: "'Poppins',sans-seri
 
 export default function CustomModelsPage() {
   const { user, token } = useAuth();
-  const [form, setForm] = useState({ title: "", description: "", budget: "", phone: "", email: user?.email || "", category: "science" });
+  const [form, setForm] = useState({ title: "", description: "", budget: "", phone: "", email: user?.email || "", category: "science", fileUrl: "" });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -72,6 +73,13 @@ export default function CustomModelsPage() {
                 <div><label style={labelStyle}>WhatsApp Number</label><input className="craft-input" type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
               </div>
               <div><label style={labelStyle}>Email *</label><input className="craft-input" type="email" required placeholder="your@email.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
+              <ImageUpload
+                label="Reference Image (optional)"
+                value={form.fileUrl}
+                onChange={url => setForm(f => ({ ...f, fileUrl: url }))}
+                hint="Upload a sketch or example of what you want."
+              />
+
               <button type="submit" className="btn-primary" disabled={loading || !user} style={{ justifyContent: "center", fontSize: 14, padding: "14px", opacity: (!user || loading) ? 0.6 : 1 }}>
                 {loading ? "Submitting..." : "Submit Custom Request"}
               </button>
